@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import bluepyopt as bpop
 import multiprocessing as mp
-import sim_evaluator
+import sim_evaluator_gamma as sim_evaluator
 base_path = os.path.sep.join(os.path.abspath("__file__").split(os.path.sep)[:-3])
 # add "scripts" directory to the path (to import modules)
 sys.path.insert(0, os.path.sep.join([base_path, "scripts"]))
@@ -24,7 +24,7 @@ logger.setLevel(logging.INFO)
 
 def load_checkpoints(pklf_name):
     """
-    Loads in saved checkpoints from pickle file (used e.g. to repeat the analysis part...)
+    Loads in saved checkpoints from pickle file (used e.g. to repeat analysis...)
     :param pklf_name: name of the saved pickle file
     :return: obejects saved by BluePyOpt"""
     import pickle
@@ -53,24 +53,32 @@ if __name__ == "__main__":
     except:
         STDP_mode = "sym"
     assert STDP_mode in ["sym", "asym"]
-    linear = True
+    linear = False
     place_cell_ratio = 0.5
     f_in = "wmx_%s_%.1f_linear.pkl" % (STDP_mode, place_cell_ratio) if linear else "wmx_%s_%.1f.pkl" % (STDP_mode, place_cell_ratio)
-    cp_f_name = os.path.join(base_path, "scripts", "optimization", "checkpoints", "checkpoint_%s" % f_in[4:])
-    hof_f_name = os.path.join(base_path, "scripts", "optimization", "checkpoints", "hof_%s.csv" % f_in[4:-4])
+    cp_f_name = os.path.join(base_path, "scripts", "optimization", "checkpoints", "gamma_checkpoint_%s" % f_in[4:])
+    hof_f_name = os.path.join(base_path, "scripts", "optimization", "checkpoints", "gamma_hof_%s.csv" % f_in[4:-4])
 
     # parameters to be fitted as a list of: (name, lower bound, upper bound)
     # the order matters! if you want to add more parameters - update `run_sim.py` too
-    optconf = [("w_PC_I_", 0.1, 2.0),
-               ("w_BC_E_", 0.1, 2.0),
-               ("w_BC_I_", 1.0, 8.0),
-               ("wmx_mult_", 0.5, 2.0),
+    '''
+    optconf = [("w_PC_I_", 0.15, 0.4),
+               ("w_BC_E_", 3.25, 4.25),
+               ("w_BC_I_", 6.5, 8.0),
+               ("wmx_mult_", 1.0, 3.0),
+               ("w_PC_MF_", 24.0, 26.0),
+               ("rate_MF_", 15.0, 17.0)]
+    '''
+    optconf = [("w_PC_I_", 0.1, 5.0),
+               ("w_BC_E_", 0.1, 5.0),
+               ("w_BC_I_", 1.0, 6.0),
+               ("wmx_mult_", 0.2, 1.0),
                ("w_PC_MF_", 15.0, 25.0),
-               ("rate_MF_", 5.0, 20.0)]
+               ("rate_MF_", 10.0, 20.0)]
     pnames = [name for name, _, _ in optconf]
 
-    offspring_size = 50
-    max_ngen = 10
+    offspring_size = 71
+    max_ngen = 5
 
     pklf_name = os.path.join(base_path, "files", f_in)
     wmx_PC_E = load_wmx(pklf_name) * 1e9  # *1e9 nS conversion
@@ -91,6 +99,7 @@ if __name__ == "__main__":
     # summary figure (about optimization)
     plot_evolution(log.select("gen"), np.array(log.select("min")), np.array(log.select("avg")),
                    np.array(log.select("std")), "fittnes_evolution")
+    # pop, hof, log, hist = load_checkpoints(cp_f_name)
 
     # save hall of fame to csv, get best individual, and rerun with best parameters to save figures
     hof2csv(pnames, hof, hof_f_name)
