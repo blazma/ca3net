@@ -66,7 +66,7 @@ w_BC_I_sorted = sorted(list(pandas.unique(data_df["w_BC_I"])), reverse=True)
 
 fig, axes = plt.subplots(3,3)
 cbar_ax = fig.add_axes([.95, .3, .03, .4])
-vmax = (data_df["gamma_power_LFP"] / data_df["ripple_power_LFP"]).max()
+vmax = data_df["gamma_power_PC"].max() #/ data_df["ripple_power_LFP"]).max()
 for outer_x, w_PC_E in enumerate(w_PC_E_sorted):
     axes[0][outer_x].set_title(w_PC_E, fontsize=20)
     for outer_y, w_PC_I in enumerate(w_PC_I_sorted):
@@ -80,7 +80,7 @@ for outer_x, w_PC_E in enumerate(w_PC_E_sorted):
                     (data_df["w_PC_E"] == w_PC_E) &
                     (data_df["w_PC_I"] == w_PC_I)
                 ]
-                val = datapoint["gamma_power_LFP"] / datapoint["ripple_power_LFP"]
+                val = datapoint["gamma_power_PC"] #/ datapoint["ripple_power_LFP"]
                 heatmap_matrix[inner_y, inner_x] = float(val)
         seaborn.heatmap(heatmap_matrix, ax=axes[outer_y, outer_x], vmin=0, vmax=vmax, cbar_ax=cbar_ax,
                         xticklabels = w_BC_E_sorted,
