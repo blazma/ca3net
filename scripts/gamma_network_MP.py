@@ -14,11 +14,8 @@ import random as pyrandom
 from brian2 import *
 prefs.codegen.target = "numpy"
 import matplotlib.pyplot as plt
-from helper import load_wmx, preprocess_monitors, generate_cue_spikes,\
-                   save_vars, save_PSD, save_TFR, save_LFP, save_replay_analysis
-from detect_replay import replay_circular, slice_high_activity, replay_linear
-from detect_oscillations import analyse_rate, ripple_AC, ripple, gamma, calc_TFR, analyse_estimated_LFP
-from plots import plot_raster, plot_posterior_trajectory, plot_PSD, plot_TFR, plot_zoomed, plot_detailed, plot_LFP
+from helper import load_wmx, save_vars
+from spw_network import analyse_results
 import traceback
 import time
 import subprocess
@@ -225,13 +222,13 @@ def grid_search_worker(g1, g2, g3, g4, wmx_PC_E, save, seed, verbose):
 
     print("# starting analysis")
     results = analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC, seed=seed,
-                              multiplier=1, linear=linear, pklf_name=PF_pklf_name, dir_name=dir_name,
-                              TFR=TFR, save=save, verbose=verbose)
+                              multiplier=1, linear=True, pklf_name=None, dir_name=None,
+                              analyse_replay=False, TFR=False, save=save, verbose=False)
 
     print("# save results to file")
     with open(os.path.join(gridsearch_output_dir, "results.txt"), "w") as gridresults_file:
         for result_key, result_value in results.items():
-            gridresults_file.writelines([result_key, "=", result_value, "\n"])
+            gridresults_file.writelines([result_key, "=", str(result_value), "\n"])
 
     print("# copying figures")
     figures_dir = os.path.join(base_path, "figures")
