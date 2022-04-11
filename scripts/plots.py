@@ -164,7 +164,7 @@ def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_):
         pass
     ax3.plot(f, Pxx_plot_mean, color=color_, marker="o")
     ax3.plot(f_ripple, Pxx_ripple_plot, "r-", marker="o", linewidth=1.5, label="ripple (150-220 Hz)")
-    ax3.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label="gamma (30-100 Hz)")
+    ax3.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label="gamma (20-100 Hz)")
     ax3.set_title("Power Spectrum Density")
     ax3.set_xlim([0, 500])
     ax3.set_xlabel("Frequency (Hz)")
@@ -406,7 +406,7 @@ def plot_LFP(t, LFP, f, Pxx, multiplier_):
         pass
     ax2.plot(f, Pxx_plot_mean, color="purple", marker="o")
     ax2.plot(f_ripple, Pxx_ripple_plot, "r-", marker="o", linewidth=1.5, label="ripple (150-220 Hz)")
-    ax2.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label="gamma (30-100 Hz)")
+    ax2.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label="gamma (20-100 Hz)")
     ax2.set_title("Power Spectrum Density")
     ax2.set_xlim([0, 500])
     ax2.set_xlabel("Frequency (Hz)")
