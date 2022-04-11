@@ -1,4 +1,5 @@
 import os
+import sys
 import csv
 from glob import glob
 import pandas
@@ -7,9 +8,8 @@ import seaborn
 from matplotlib import pyplot as plt
 
 
-cwd = os.getcwd()
 data = []
-for subdir in glob("{}/*/".format(cwd)):
+for subdir in glob("{}/*/".format(sys.argv[1])):
     with open("{}/params.txt".format(subdir), "r") as params:
         g1, g2, g3, g4 = [float(p.strip("\n")) for p in params.readlines()]
 

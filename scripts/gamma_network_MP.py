@@ -185,7 +185,7 @@ def run_simulation(wmx_PC_E, g1, g2, g3, g4, save, seed, verbose=True):
     RM_PC = PopulationRateMonitor(PCs)
     RM_BC = PopulationRateMonitor(BCs)
 
-    selection = np.arange(0, nPCs, 4)   # subset of neurons for recoring variables
+    selection = np.arange(0, nPCs, 20)   # subset of neurons for recoring variables
     StateM_PC = StateMonitor(PCs, variables=["vm", "w", "g_ampa", "g_ampaMF", "g_gaba"],
                              record=selection.tolist(), dt=0.1*ms)
     StateM_BC = StateMonitor(BCs, "vm", record=[nBCs/2], dt=0.1*ms)
@@ -235,6 +235,7 @@ def grid_search_worker(g1, g2, g3, g4, wmx_PC_E, save, seed, verbose):
     subprocess.call(['cp', '-a', figures_dir, gridsearch_output_dir])
 
     print("# No. {} DONE! Time it took: {}".format(counter, time.time() - start_time))
+    counter += 1
 
 if __name__ == "__main__":
     seed = 12345
@@ -253,6 +254,6 @@ if __name__ == "__main__":
             for g3 in [0.5, 1.0, 2.0]:
                 for g4 in [0.5, 1.0, 2.0]:
                     worker = pool.apply_async(grid_search_worker, (g1,g2,g3,g4,wmx_PC_E,save,seed,verbose))
-                    worker.get()
+                    #worker.get()
     pool.close()
     pool.join()
