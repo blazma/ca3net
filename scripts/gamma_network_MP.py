@@ -246,7 +246,7 @@ if __name__ == "__main__":
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
 
     counter = 1
-    pool_size = 2
+    pool_size = 1
     pool = multiprocessing.Pool(pool_size)
 
     for g1 in [0.5, 1.0, 2.0]:
@@ -254,6 +254,5 @@ if __name__ == "__main__":
             for g3 in [0.5, 1.0, 2.0]:
                 for g4 in [0.5, 1.0, 2.0]:
                     worker = pool.apply_async(grid_search_worker, (g1,g2,g3,g4,wmx_PC_E,save,seed,verbose))
-                    #worker.get()
     pool.close()
     pool.join()

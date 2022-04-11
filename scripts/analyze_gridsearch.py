@@ -89,6 +89,14 @@ def plot_variable_as_heatmap(variable):
             fig.text(0.5, 0.94, 'w_PC_E', ha='center', fontsize=15)
             fig.text(0.04, 0.5, 'w_PC_I', va='center', rotation='vertical', fontsize=15)
 
-plot_variable_as_heatmap("absolute_gamma_power_PC")
-plot_variable_as_heatmap("relative_gamma_power_PC")
+variables = ["absolute_gamma_power_PC",
+             "relative_gamma_power_PC",
+             "absolute_gamma_power_BC",
+             "relative_gamma_power_BC",
+             "absolute_gamma_power_LFP",
+             "relative_gamma_power_LFP"]
+
+for variable in variables:
+    plot_variable_as_heatmap(variable)
+    plot_variable_as_heatmap(variable)
 plt.show()

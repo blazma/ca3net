@@ -303,6 +303,10 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
         avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC= gamma(f_BC, Pxx_BC, slice_idx)
         avg_gamma_freq_LFP, absolute_gamma_power_LFP, relative_gamma_power_LFP = gamma(f_LFP, Pxx_LFP, slice_idx)
 
+        peak_freq_PC = f_PC[np.argmax(Pxx_PC)]
+        peak_freq_BC = f_BC[np.argmax(Pxx_BC)]
+        peak_freq_LFP = f_LFP[np.argmax(Pxx_LFP)]
+
         if verbose:
             if not np.isnan(replay):
                 print("Replay detected!")
@@ -340,7 +344,10 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
             "max_ac_PC": max_ac_PC,
             "max_ac_ripple_PC": max_ac_ripple_PC,
             "max_ac_BC": max_ac_BC,
-            "max_ac_ripple_B": max_ac_ripple_BC
+            "max_ac_ripple_B": max_ac_ripple_BC,
+            "peak_freq_PC": peak_freq_PC,
+            "peak_freq_BC": peak_freq_BC,
+            "peak_freq_LFP": peak_freq_LFP,
         }
         return results
     else:

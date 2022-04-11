@@ -133,7 +133,7 @@ def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_):
         rate_ac_plot_mean = rate_ac[2:201]
     f = np.asarray(f)
     f_ripple = f[np.where((150 < f) & (f < 220))]; Pxx_ripple_plot = Pxx_plot_mean[np.where((150 < f) & (f < 220))]
-    f_gamma = f[np.where((30 < f) & (f < 100))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((30 < f) & (f < 100))]
+    f_gamma = f[np.where((20 < f) & (f < 100))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((20 < f) & (f < 100))]
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(3, 1, 1)
@@ -386,7 +386,7 @@ def plot_LFP(t, LFP, f, Pxx, multiplier_):
         Pxx_plot_mean = 10 * np.log10(Pxx / max(Pxx))
 
     f_ripple = f[np.where((150 < f) & (f < 220))]; Pxx_ripple_plot = Pxx_plot_mean[np.where((150 < f) & (f < 220))]
-    f_gamma = f[np.where((30 < f) & (f < 100))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((30 < f) & (f < 100))]
+    f_gamma = f[np.where((20 < f) & (f < 100))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((20 < f) & (f < 100))]
 
     fig = plt.figure(figsize=(10, 8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])

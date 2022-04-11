@@ -166,7 +166,7 @@ def gamma(f, Pxx, slice_idx=[], p_th=0.05):
     if slice_idx:
         p_vals, freqs, absolute_gamma_powers, relative_gamma_powers = [], [], [], []
         for i in range(Pxx.shape[0]):
-            Pxx_gamma = Pxx[i, :][np.where((30 < f) & (f < 100))]
+            Pxx_gamma = Pxx[i, :][np.where((20 < f) & (f < 100))]
             p_vals.append(_fisher(Pxx_gamma))
             freqs.append(Pxx_gamma.argmax())
             absolute_gamma_powers.append(sum(Pxx_gamma))
@@ -174,14 +174,14 @@ def gamma(f, Pxx, slice_idx=[], p_th=0.05):
         idx = np.where(np.asarray(p_vals) <= p_th)[0].tolist()
         if len(idx) >= 0.25*len(slice_idx):  # if at least 25% are significant
             avg_freq = np.mean(np.asarray(freqs)[idx])
-            avg_gamma_freq = f[np.where(30 < f)[0][0] + int(avg_freq)]
+            avg_gamma_freq = f[np.where(20 < f)[0][0] + int(avg_freq)]
         else:
             avg_gamma_freq = np.nan
         return avg_gamma_freq, np.mean(absolute_gamma_powers), np.mean(relative_gamma_powers)
     else:
-        Pxx_gamma = Pxx[np.where((30 < f) & (f < 100))]
+        Pxx_gamma = Pxx[np.where((20 < f) & (f < 100))]
         p_val = _fisher(Pxx_gamma)
-        avg_gamma_freq = f[np.where(30 < f)[0][0] + Pxx_gamma.argmax()] if p_val < p_th else np.nan
+        avg_gamma_freq = f[np.where(20 < f)[0][0] + Pxx_gamma.argmax()] if p_val < p_th else np.nan
         absolute_gamma_power = sum(Pxx_gamma)
         relative_gamma_power = (sum(Pxx_gamma) / sum(Pxx)) * 100
         return avg_gamma_freq, absolute_gamma_power, relative_gamma_power
