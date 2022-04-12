@@ -10,6 +10,8 @@ from matplotlib import pyplot as plt
 
 data = []
 for subdir in glob("{}/*/".format(sys.argv[1])):
+    if "output" in subdir:
+        continue
     with open("{}/params.txt".format(subdir), "r") as params:
         g1, g2, g3, g4 = [float(p.strip("\n")) for p in params.readlines()]
 
@@ -62,9 +64,9 @@ w_BC_I_sorted = sorted(list(pandas.unique(data_df["w_BC_I"])), reverse=True)
 
 
 def plot_variable_as_heatmap(variable):
-    fig, axes = plt.subplots(3, 3)
+    fig, axes = plt.subplots(3, 3, figsize=(12,12))
     fig.suptitle(variable)
-    cbar_ax = fig.add_axes([.95, .3, .03, .4])
+    cbar_ax = fig.add_axes([.925, .3, .03, .4])
     vmax = data_df[variable].max() #/ data_df["ripple_power_LFP"]).max()
     for outer_x, w_PC_E in enumerate(w_PC_E_sorted):
         axes[0][outer_x].set_title(w_PC_E, fontsize=20)
@@ -88,6 +90,10 @@ def plot_variable_as_heatmap(variable):
             axes[outer_y, outer_x].set_ylabel("w_BC_I")
             fig.text(0.5, 0.94, 'w_PC_E', ha='center', fontsize=15)
             fig.text(0.04, 0.5, 'w_PC_I', va='center', rotation='vertical', fontsize=15)
+    save_folder = "{}/output".format(sys.argv[1])
+    if not os.path.exists(save_folder):
+        os.mkdir(save_folder)
+    plt.savefig("{}/{}.png".format(save_folder, variable))
 
 variables = ["absolute_gamma_power_PC",
              "relative_gamma_power_PC",
@@ -99,4 +105,3 @@ variables = ["absolute_gamma_power_PC",
 for variable in variables:
     plot_variable_as_heatmap(variable)
     plot_variable_as_heatmap(variable)
-plt.show()
