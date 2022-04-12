@@ -241,6 +241,7 @@ if __name__ == "__main__":
     seed = 12345
     save = False
     verbose = True
+    selected_only = True
 
     f_in = "wmx_sym_0.5_linear.pkl"
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
@@ -249,10 +250,24 @@ if __name__ == "__main__":
     pool_size = 1
     pool = multiprocessing.Pool(pool_size)
 
-    for g1 in [0.5, 1.0, 2.0]:
-        for g2 in [0.5, 1.0, 2.0]:
-            for g3 in [0.5, 1.0, 2.0]:
-                for g4 in [0.5, 1.0, 2.0]:
-                    worker = pool.apply_async(grid_search_worker, (g1,g2,g3,g4,wmx_PC_E,save,seed,verbose))
+    # set of problematic runs, to be re-run separately
+    selections = [
+        [0.5, 1.0, 2.0, 2.0],
+        [1.0, 1.0, 2.0, 2.0],
+        [1.0, 2.0, 0.5, 2.0],
+        [2.0, 1.0, 2.0, 2.0],
+        [2.0, 2.0, 0.5, 1.0],
+        [2.0, 2.0, 0.5, 2.0]
+    ]
+    if selected_only:
+        for selection in selections:
+            g1, g2, g3, g4 = selection
+            worker = pool.apply_async(grid_search_worker, (g1, g2, g3, g4, wmx_PC_E, save, seed, verbose))
+    else:
+        for g1 in [0.5, 1.0, 2.0]:
+            for g2 in [0.5, 1.0, 2.0]:
+                for g3 in [0.5, 1.0, 2.0]:
+                    for g4 in [0.5, 1.0, 2.0]:
+                        worker = pool.apply_async(grid_search_worker, (g1,g2,g3,g4,wmx_PC_E,save,seed,verbose))
     pool.close()
     pool.join()
