@@ -79,7 +79,7 @@ if __name__ == "__main__":
     n_proc = np.max([offspring_size, mp.cpu_count()-1])
     pool = mp.Pool(processes=n_proc)
     # Create BluePyOpt optimization and run
-    evaluator = sim_evaluator_gamma.Brian2Evaluator(linear, wmx_PC_E, optconf)
+    evaluator = sim_evaluator_gamma_noAch.Brian2Evaluator(linear, wmx_PC_E, optconf)
     opt = bpop.optimisations.DEAPOptimisation(evaluator, offspring_size=offspring_size, map_function=pool.map,
                                               eta=20, mutpb=0.3, cxpb=0.7)
 
