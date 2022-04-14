@@ -299,9 +299,9 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
         avg_ripple_freq_PC, ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx)
         avg_ripple_freq_BC, ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx)
         avg_ripple_freq_LFP, ripple_power_LFP = ripple(f_LFP, Pxx_LFP, slice_idx)
-        avg_gamma_freq_PC, gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx)
-        avg_gamma_freq_BC, gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx)
-        avg_gamma_freq_LFP, gamma_power_LFP = gamma(f_LFP, Pxx_LFP, slice_idx)
+        avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC= gamma(f_PC, Pxx_PC, slice_idx)
+        avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC= gamma(f_BC, Pxx_BC, slice_idx)
+        avg_gamma_freq_LFP, absolute_gamma_power_LFP, relative_gamma_power_LFP = gamma(f_LFP, Pxx_LFP, slice_idx)
 
         if verbose:
             if not np.isnan(replay):
@@ -317,12 +317,32 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
             print("Average LFP ripple freq: %.3f" % avg_ripple_freq_LFP)
             print("LFP ripple power: %.3f" % ripple_power_LFP)
 
-        return [multiplier, replay, mean_rate_PC, mean_rate_BC,
-                avg_ripple_freq_PC, ripple_power_PC, avg_ripple_freq_BC,
-                ripple_power_BC, avg_ripple_freq_LFP, ripple_power_LFP,
-                avg_gamma_freq_PC, gamma_power_PC, avg_gamma_freq_BC,
-                gamma_power_BC, avg_gamma_freq_LFP, gamma_power_LFP,
-                max_ac_PC, max_ac_ripple_PC, max_ac_BC, max_ac_ripple_BC]
+        results = {
+            "multiplier": multiplier,
+            "replay": replay,
+            "mean_rate_PC": mean_rate_PC,
+            "mean_rate_BC": mean_rate_BC,
+            "avg_ripple_freq_PC": avg_ripple_freq_PC,
+            "ripple_power_PC": ripple_power_PC,
+            "avg_ripple_freq_BC": avg_ripple_freq_BC,
+            "ripple_power_BC": ripple_power_BC,
+            "avg_ripple_freq_LFP": avg_ripple_freq_LFP,
+            "ripple_power_LFP": ripple_power_LFP,
+            "avg_gamma_freq_PC": avg_gamma_freq_PC,
+            "absolute_gamma_power_PC": absolute_gamma_power_PC,
+            "relative_gamma_power_PC": relative_gamma_power_PC,
+            "avg_gamma_freq_BC": avg_gamma_freq_BC,
+            "absolute_gamma_power_BC": absolute_gamma_power_BC,
+            "relative_gamma_power_BC": relative_gamma_power_BC,
+            "avg_gamma_freq_LFP": avg_gamma_freq_LFP,
+            "absolute_gamma_power_LFP": absolute_gamma_power_LFP,
+            "relative_gamma_power_LFP": relative_gamma_power_LFP,
+            "max_ac_PC": max_ac_PC,
+            "max_ac_ripple_PC": max_ac_ripple_PC,
+            "max_ac_BC": max_ac_BC,
+            "max_ac_ripple_B": max_ac_ripple_BC
+        }
+        return results
     else:
         if verbose:
             print("No activity!")

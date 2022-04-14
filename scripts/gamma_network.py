@@ -181,7 +181,7 @@ def run_simulation(wmx_PC_E, save, seed, verbose=True):
     RM_PC = PopulationRateMonitor(PCs)
     RM_BC = PopulationRateMonitor(BCs)
 
-    selection = np.arange(0, nPCs, 20)   # subset of neurons for recoring variables
+    selection = np.arange(0, nPCs, 4)   # subset of neurons for recoring variables
     StateM_PC = StateMonitor(PCs, variables=["vm", "w", "g_ampa", "g_ampaMF", "g_gaba"],
                              record=selection.tolist(), dt=0.1*ms)
     StateM_BC = StateMonitor(BCs, "vm", record=[nBCs/2], dt=0.1*ms)
@@ -211,12 +211,15 @@ if __name__ == "__main__":
                               multiplier=1, linear=True, pklf_name=None, dir_name=None,
                               analyse_replay=False, TFR=False, save=save, verbose=False)
     if verbose:  # bypassing verbose=True in `analyse_results` with gamma related metrics
-        print("Mean excitatory rate: %.3f" % results[2])
-        print("Mean inhibitory rate: %.3f" % results[3])
-        print("Average exc. gamma freq: %.3f" % results[10])
-        print("Exc. gamma power: %.3f" % results[11])
-        print("Average inh. gamma freq: %.3f" % results[12])
-        print("Inh. gamma power: %.3f" % results[13])
-        print("Average LFP gamma freq: %.3f" % results[14])
-        print("LFP gamma power: %.3f" % results[15])
+        print("Mean excitatory rate: %.3f" % results["mean_rate_PC"])
+        print("Mean inhibitory rate: %.3f" % results["mean_rate_BC"])
+        print("Average exc. gamma freq: %.3f" % results["avg_gamma_freq_PC"])
+        print("Exc. gamma power (absolute): %.3f" % results["absolute_gamma_power_PC"])
+        print("Exc. gamma power (relative): %.3f" % results["relative_gamma_power_PC"])
+        print("Average inh. gamma freq: %.3f" % results["avg_gamma_freq_BC"])
+        print("Inh. gamma power (absolute): %.3f" % results["absolute_gamma_power_BC"])
+        print("Inh. gamma power (relative): %.3f" % results["relative_gamma_power_BC"])
+        print("Average LFP gamma freq: %.3f" % results["avg_gamma_freq_LFP"])
+        print("LFP gamma power (absolute): %.3f" % results["absolute_gamma_power_LFP"])
+        print("LFP gamma power (relative): %.3f" % results["relative_gamma_power_LFP"])
     plt.show()

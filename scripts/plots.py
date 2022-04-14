@@ -243,9 +243,10 @@ def plot_zoomed(spike_times, spiking_neurons, rate, title_, color_, multiplier_,
     avg_rate = _avg_rate(rate, bin_, zoomed=True)
 
     # set boundaries and marker size
+    boundary = 20
     if PC_pop:
-        ymin = spiking_neurons.min()-5 if spiking_neurons.min()-5 > 0 else 0
-        ymax = spiking_neurons.max()+5 if spiking_neurons.max()+5 < nPCs else nPCs
+        ymin = spiking_neurons.min()-boundary if spiking_neurons.min()-boundary > 0 else 0
+        ymax = spiking_neurons.max()+boundary if spiking_neurons.max()+boundary < nPCs else nPCs
         subset = _select_subset(selection, ymin, ymax)
         size_ = 12
     else:
