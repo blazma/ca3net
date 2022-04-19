@@ -87,8 +87,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                 no_subgamma_peakE = 1. if np.isnan(avg_subgamma_freq_PC) else 0.
                 no_subgamma_peakI = 1. if np.isnan(avg_subgamma_freq_BC) else 0.
                 # look for high gamma/sub gamma (alpha, beta) power ratio
-                gamma_ratioE = np.clip(relatve_gamma_power_PC/subgamma_power_PC, 0., 5.)
-                gamma_ratioI = np.clip(relatve_gamma_power_BC/subgamma_power_BC, 0., 5.)
+                gamma_ratioE = np.clip(relative_gamma_power_PC/subgamma_power_PC, 0., 5.)
+                gamma_ratioI = np.clip(relative_gamma_power_BC/subgamma_power_BC, 0., 5.)
                 # look for "low" exc. population rate (around 1.0 Hz)
                 rateE = np.exp(-1/2*(mean_rate_PC-1.0)**2/0.5**2)
                 # penalize replay (only in circular env)
@@ -102,7 +102,9 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                                          gamma_ratioE, gamma_ratioI,  rateE, no_replay, np.log(absolute_gamma_power_BC),
                                          np.log(absolute_gamma_power_PC)])
                 filename = "_".join(list([str(i) for i in individual]))
-                with open("./errors/{}.txt".format(filename), "w") as errors_file:
+                if not os.path.isdir("./errors"):
+                    os.mkdir("./errors")
+                with open("errors/{}.txt".format(filename), "w") as errors_file:
                     errors_file.writelines(["gamma_peakE=", str(gamma_peakE), "\n",
                                             "gamma_peakI=", str(gamma_peakI), "\n",
                                             "no_subgamma_peakE=", str(no_subgamma_peakE), "\n",
@@ -111,6 +113,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                                             "gamma_ratioI=", str(gamma_ratioI), "\n",
                                             "rateE=", str(rateE), "\n",
                                             "no_replay=", str(no_replay), "\n",
+                                            "relative_gamma_power_PC", str(relative_gamma_power_PC), "\n",
+                                            "relative_gamma_power_BC", str(relative_gamma_power_BC), "\n",
                                             "absolute_gamma_power_PC", str(absolute_gamma_power_PC), "\n",
                                             "absolute_gamma_power_BC", str(absolute_gamma_power_BC)])
                 return errors.tolist()

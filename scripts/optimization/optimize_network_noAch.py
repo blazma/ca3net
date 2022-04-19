@@ -76,7 +76,7 @@ if __name__ == "__main__":
     wmx_PC_E = load_wmx(pklf_name) * 1e9  # *1e9 nS conversion
 
     # Create multiprocessing pool for parallel evaluation of fitness function
-    n_proc = np.max([offspring_size, mp.cpu_count()-1])
+    n_proc = 2
     pool = mp.Pool(processes=n_proc)
     # Create BluePyOpt optimization and run
     evaluator = sim_evaluator_gamma_noAch.Brian2Evaluator(linear, wmx_PC_E, optconf)
