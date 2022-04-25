@@ -239,5 +239,6 @@ if __name__ == "__main__":
                 results_file.writelines([key, "=", str(value), "\n"])
 
         print("# copying figures")
-        top10_figures_dir = os.path.join(figures_dir, "figures")
+        figures_dir = os.path.join(base_path, "figures")
+        top10_figures_dir = os.path.join(top10_output_dir, "figures")
         shutil.copytree(figures_dir, top10_figures_dir)
