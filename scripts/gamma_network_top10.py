@@ -203,10 +203,13 @@ if __name__ == "__main__":
     save = False
     verbose = True
 
-
     hof_path = "optimization/checkpoints/hof_sym_0.5_linear.csv"
-
     params = np.genfromtxt(hof_path, delimiter=",", names=True)
+
+    top10_dir = os.path.join(base_path, "top10")
+    if not os.path.exists(top10_dir):
+        os.mkdir(top10_dir)
+
     for idx in range(len(params)):
         _, w_PC_I_, w_BC_E_, w_BC_I_, wmx_mult_, w_PC_MF_, rate_MF_ = params[idx]
         rate_MF_ = rate_MF_ * Hz
@@ -236,5 +239,5 @@ if __name__ == "__main__":
                 results_file.writelines([key, "=", str(value), "\n"])
 
         print("# copying figures")
-        figures_dir = os.path.join(base_path, "figures")
-        shutil.copytree(figures_dir, top10_output_dir)
+        top10_figures_dir = os.path.join(figures_dir, "figures")
+        shutil.copytree(figures_dir, top10_figures_dir)
