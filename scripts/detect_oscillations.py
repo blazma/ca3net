@@ -62,11 +62,17 @@ def analyse_rate(rate, fs, slice_idx=[]):
         PSDs = [_calc_spectrum(rate_tmp, fs=fs, nperseg=256) for rate_tmp in rates]
         f = PSDs[0][0]
         Pxxs = np.array([tmp[1] for tmp in PSDs])
-        return np.mean(rate), rate_acs, np.mean(max_acs), np.mean(t_max_acs), f, Pxxs
+
+        PSDs_norm = [_calc_spectrum(rate_tmp/np.mean(rate_tmp), fs=fs, nperseg=256) for rate_tmp in rates]
+        f_norm = PSDs_norm[0][0]
+        Pxxs_norm = np.array([tmp[1] for tmp in PSDs_norm])
+
+        return np.mean(rate), rate_acs, np.mean(max_acs), np.mean(t_max_acs), f, Pxxs, f_norm, Pxxs_norm
     else:
         rate_ac = _autocorrelation(rate)
         f, Pxx = _calc_spectrum(rate, fs=fs, nperseg=512)
-        return np.mean(rate), rate_ac, rate_ac[1:].max(), rate_ac[1:].argmax()+1, f, Pxx
+        f_norm, Pxx_norm = _calc_spectrum(rate/np.mean(rate), fs=fs, nperseg=512)
+        return np.mean(rate), rate_ac, rate_ac[1:].max(), rate_ac[1:].argmax()+1, f, Pxx, f_norm, Pxx_norm
 
 
 def calc_TFR(rate, fs, slice_idx=[]):

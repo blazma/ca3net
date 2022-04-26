@@ -113,10 +113,10 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                                             "gamma_ratioI=", str(gamma_ratioI), "\n",
                                             "rateE=", str(rateE), "\n",
                                             "no_replay=", str(no_replay), "\n",
-                                            "relative_gamma_power_PC", str(relative_gamma_power_PC), "\n",
-                                            "relative_gamma_power_BC", str(relative_gamma_power_BC), "\n",
-                                            "absolute_gamma_power_PC", str(absolute_gamma_power_PC), "\n",
-                                            "absolute_gamma_power_BC", str(absolute_gamma_power_BC)])
+                                            "relative_gamma_power_PC=", str(relative_gamma_power_PC), "\n",
+                                            "relative_gamma_power_BC=", str(relative_gamma_power_BC), "\n",
+                                            "absolute_gamma_power_PC=", str(absolute_gamma_power_PC), "\n",
+                                            "absolute_gamma_power_BC=", str(absolute_gamma_power_BC)])
                 return errors.tolist()
             else:
                 return wc_errors

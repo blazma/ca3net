@@ -259,8 +259,8 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
             if save:
                 save_replay_analysis(replay, replay_results, seed)
 
-        mean_rate_PC, rate_ac_PC, max_ac_PC, t_max_ac_PC, f_PC, Pxx_PC = analyse_rate(rate_PC, 1000., slice_idx)
-        mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000., slice_idx)
+        mean_rate_PC, rate_ac_PC, max_ac_PC, t_max_ac_PC, f_PC, Pxx_PC, f_PC_norm, Pxx_PC_norm = analyse_rate(rate_PC, 1000., slice_idx)
+        mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC, f_BC_norm, Pxx_BC_norm = analyse_rate(rate_BC, 1000., slice_idx)
         plot_PSD(rate_PC, rate_ac_PC, f_PC, Pxx_PC, "PC_population", "blue", multiplier_=multiplier)
         plot_PSD(rate_BC, rate_ac_BC, f_BC, Pxx_BC, "BC_population", "green", multiplier_=multiplier)
 
@@ -299,8 +299,8 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
         avg_ripple_freq_PC, ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx)
         avg_ripple_freq_BC, ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx)
         avg_ripple_freq_LFP, ripple_power_LFP = ripple(f_LFP, Pxx_LFP, slice_idx)
-        avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC= gamma(f_PC, Pxx_PC, slice_idx)
-        avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC= gamma(f_BC, Pxx_BC, slice_idx)
+        avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC= gamma(f_PC, Pxx_PC_norm, slice_idx)
+        avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC= gamma(f_BC, Pxx_BC_norm, slice_idx)
         avg_gamma_freq_LFP, absolute_gamma_power_LFP, relative_gamma_power_LFP = gamma(f_LFP, Pxx_LFP, slice_idx)
 
         if verbose:
