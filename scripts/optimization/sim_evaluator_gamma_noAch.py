@@ -55,8 +55,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                 gc.collect()
                 # analyse rates
                 slice_idx = [] #if not self.linear else slice_high_activity(rate_PC, th=2, min_len=260)
-                mean_rate_PC, rate_ac_PC, max_ac_PC, t_max_ac_PC, f_PC, Pxx_PC = analyse_rate(rate_PC, 1000.0, slice_idx)
-                mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000.0, slice_idx)
+                mean_rate_PC, rate_ac_PC, max_ac_PC, t_max_ac_PC, f_PC, Pxx_PC = analyse_rate(rate_PC, 1000.0, slice_idx, normalize=True)
+                mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000.0, slice_idx, normalize=True)
                 avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx)
                 avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx)
                 avg_subgamma_freq_PC, subgamma_power_PC = lowfreq(f_PC, Pxx_PC, slice_idx)
