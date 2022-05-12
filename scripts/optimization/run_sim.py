@@ -102,7 +102,7 @@ dx_gaba/dt = -x_gaba/decay_BC_I : 1
 """
 
 
-def run_simulation(wmx_PC_E, w_PC_I_, w_BC_E_, w_BC_I_, wmx_mult_, w_PC_MF_, rate_MF_, verbose=False):
+def run_simulation(wmx_PC_E, w_PC_I_, w_BC_E_, w_BC_I_, wmx_mult_, w_PC_MF_, rate_MF_, g_leak_PC, tau_mem_PC, Cm_PC, Vrest_PC, Vrest_BC, verbose=False):
     """
     runs single simulation, with specified input parameters and synaptic weights (to be optimized by BluePyOpt)
     :param wmx_PC_E: weight matrix (this will not be optimized)

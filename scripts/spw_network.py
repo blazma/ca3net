@@ -342,6 +342,12 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
             "max_ac_BC": max_ac_BC,
             "max_ac_ripple_B": max_ac_ripple_BC
         }
+
+        #with open("rates.txt", "w") as rates_file:
+        #    rates_file.write("rate_PC\trate_BC")
+        #    for i in range(len(rate_PC)):
+        #        rates_file.writelines([str(rate_PC[i]), "\t", str(rate_BC[i]), "\n"])
+
         return results
     else:
         if verbose:
