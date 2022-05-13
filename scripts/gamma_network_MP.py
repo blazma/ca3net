@@ -16,6 +16,7 @@ prefs.codegen.target = "numpy"
 import matplotlib.pyplot as plt
 from helper import load_wmx, save_vars
 from spw_network import analyse_results
+from collections import OrderedDict
 import traceback
 import time
 import subprocess
@@ -146,10 +147,15 @@ def run_simulation(wmx_PC_E, g1, g2, g3, g4, save, seed, verbose=True):
     pyrandom.seed(seed)
 
     # synaptic weights (see `/optimization/optimize_network.py`)
-    wmx_PC_E = g1 * (0.02 / 0.15) * wmx_PC_E       # gamma
-    w_PC_I = g2 * (2.0 / 4.0) * 0.65  # nS       # gamma
-    w_BC_E = g3 * (0.3 / 1.5) * 0.85             # gamma
-    w_BC_I = g4 * (0.1) * 5.                     # gamma (manual)
+    #wmx_PC_E = g1 * (0.02 / 0.15) * wmx_PC_E       # gamma
+    #w_PC_I = g2 * (2.0 / 4.0) * 0.65  # nS       # gamma
+    #w_BC_E = g3 * (0.3 / 1.5) * 0.85             # gamma
+    #w_BC_I = g4 * (0.1) * 5.                     # gamma (manual)
+
+    wmx_PC_E = g1 * wmx_PC_E
+    w_PC_I = g2
+    w_BC_E = g3
+    w_BC_I = g4
     w_PC_MF = 19.15
 
     PCs = NeuronGroup(nPCs, model=eqs_PC, threshold="vm>spike_th_PC",
@@ -234,20 +240,18 @@ def grid_search_worker(g1, g2, g3, g4, wmx_PC_E, save, seed, verbose):
     figures_dir = os.path.join(base_path, "figures")
     subprocess.call(['cp', '-a', figures_dir, gridsearch_output_dir])
 
-    print("# No. {} DONE! Time it took: {}".format(counter, time.time() - start_time))
-    counter += 1
+    print("# DONE!")
 
 if __name__ == "__main__":
     seed = 12345
     save = False
     verbose = True
-    selected_only = True
+    selected_only = False
 
     f_in = "wmx_sym_0.5_linear.pkl"
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
 
-    counter = 1
-    pool_size = 1
+    pool_size = 2
     pool = multiprocessing.Pool(pool_size)
 
     # set of problematic runs, to be re-run separately
@@ -264,10 +268,53 @@ if __name__ == "__main__":
             g1, g2, g3, g4 = selection
             worker = pool.apply_async(grid_search_worker, (g1, g2, g3, g4, wmx_PC_E, save, seed, verbose))
     else:
-        for g1 in [0.5, 1.0, 2.0]:
-            for g2 in [0.5, 1.0, 2.0]:
-                for g3 in [0.5, 1.0, 2.0]:
-                    for g4 in [0.5, 1.0, 2.0]:
+
+        measured_conductances = {
+            "w_BC_E": {    #g3
+                "g_preCCh": 3.51,
+                "g_postCCh": 1.09,
+            },
+            "w_PC_E": {    # g1
+                "g_preCCh": 2.34,
+                "g_postCCh": 0.44
+            },
+            "w_PC_I": {    #g2
+                "g_preCCh": 2.82,
+                "g_postCCh": 0.9
+            },
+            "w_BC_I": {    #g4
+                "g_preCCh": 2.0,
+                "g_postCCh": 2.0
+            }
+        }
+
+        gridpoints = OrderedDict()
+        for g in measured_conductances:
+            if "w_PC_E" in g:
+                continue
+            g0 = measured_conductances[g]["g_preCCh"]
+            g2 = measured_conductances[g]["g_postCCh"]
+            g1 = (g0 + g2) / 2
+            gridpoints[g] = [g0, g1, g2]
+        pctl = 100 - 0.92  # 0.92% is the mean connection probability between PCs in Guzman et al (2016)
+        wmx_PC_E_pctl = numpy.percentile(wmx_PC_E, pctl)
+        wmx_PC_E_filt = wmx_PC_E[wmx_PC_E > wmx_PC_E_pctl]
+
+        # here we can't give an exact grid point but a multiplier for all elements of the weight matrix
+        # which will land the mean of the highest conductances to the desired measured conductances
+        gridpoints["w_PC_E"] = [0.0, 0.0, 0.0]
+        gridpoints["w_PC_E"][0] = measured_conductances["w_PC_E"]["g_preCCh"] / np.mean(wmx_PC_E_filt)
+        gridpoints["w_PC_E"][2] = measured_conductances["w_PC_E"]["g_postCCh"] / np.mean(wmx_PC_E_filt)
+        gridpoints["w_PC_E"][1] = (gridpoints["w_PC_E"][0] + gridpoints["w_PC_E"][2]) / 2
+
+        # since this one is the same for both preCch and PostCCh we'll perturbate it a little bit
+        gridpoints["w_BC_I"][0] = gridpoints["w_BC_I"][1] * 0.5
+        gridpoints["w_BC_I"][2] = gridpoints["w_BC_I"][1] * 2.0
+
+        for g1 in gridpoints["w_PC_E"]:
+            for g2 in gridpoints["w_PC_I"]:
+                for g3 in gridpoints["w_BC_E"]:
+                    for g4 in gridpoints["w_BC_I"]:
                         worker = pool.apply_async(grid_search_worker, (g1,g2,g3,g4,wmx_PC_E,save,seed,verbose))
     pool.close()
     pool.join()

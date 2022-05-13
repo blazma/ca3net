@@ -132,25 +132,27 @@ def ripple(f, Pxx, slice_idx=[], p_th=0.05):
 
     f = np.asarray(f)
     if slice_idx:
-        p_vals, freqs, ripple_powers = [], [], []
+        p_vals, freqs, absolute_ripple_powers, relative_ripple_powers = [], [], [], []
         for i in range(Pxx.shape[0]):
             Pxx_ripple = Pxx[i, :][np.where((150 < f) & (f < 220))]
             p_vals.append(_fisher(Pxx_ripple))
             freqs.append(Pxx_ripple.argmax())
-            ripple_powers.append((sum(Pxx_ripple) / sum(Pxx[i, :])) * 100)
+            absolute_ripple_powers.append(sum(Pxx_ripple))
+            relative_ripple_powers.append((sum(Pxx_ripple) / sum(Pxx[i, :])) * 100)
         idx = np.where(np.asarray(p_vals) <= p_th)[0].tolist()
         if len(idx) >= 0.25*len(slice_idx):  # if at least 25% are significant
             avg_freq = np.mean(np.asarray(freqs)[idx])
             avg_ripple_freq = f[np.where(150 < f)[0][0] + int(avg_freq)]
         else:
             avg_ripple_freq = np.nan
-        return avg_ripple_freq, np.mean(ripple_powers)
+        return avg_ripple_freq, np.mean(absolute_ripple_powers), np.mean(relative_ripple_powers)
     else:
         Pxx_ripple = Pxx[np.where((150 < f) & (f < 220))]
         p_val = _fisher(Pxx_ripple)
         avg_ripple_freq = f[np.where(150 < f)[0][0] + Pxx_ripple.argmax()] if p_val < p_th else np.nan
-        ripple_power = (sum(Pxx_ripple) / sum(Pxx)) * 100
-        return avg_ripple_freq, ripple_power
+        absolute_ripple_power = sum(Pxx_ripple)
+        relative_ripple_power = (sum(Pxx_ripple) / sum(Pxx)) * 100
+        return avg_ripple_freq, absolute_ripple_power, relative_ripple_power
 
 
 def gamma(f, Pxx, slice_idx=[], p_th=0.05):

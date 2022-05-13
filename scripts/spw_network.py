@@ -299,9 +299,9 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
 
         max_ac_ripple_PC, t_max_ac_ripple_PC = ripple_AC(rate_ac_PC, slice_idx)
         max_ac_ripple_BC, t_max_ac_ripple_BC = ripple_AC(rate_ac_BC, slice_idx)
-        avg_ripple_freq_PC, ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx)
-        avg_ripple_freq_BC, ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx)
-        avg_ripple_freq_LFP, ripple_power_LFP = ripple(f_LFP, Pxx_LFP, slice_idx)
+        avg_ripple_freq_PC, absolute_ripple_power_PC, relative_ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx)
+        avg_ripple_freq_BC, absolute_ripple_power_BC, relative_ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx)
+        avg_ripple_freq_LFP, absolute_ripple_power_LFP, relative_ripple_power_LFP = ripple(f_LFP, Pxx_LFP, slice_idx)
         avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC= gamma(f_PC, Pxx_PC, slice_idx)
         avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC= gamma(f_BC, Pxx_BC, slice_idx)
         avg_gamma_freq_LFP, absolute_gamma_power_LFP, relative_gamma_power_LFP = gamma(f_LFP, Pxx_LFP, slice_idx)
@@ -318,11 +318,11 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
             print("Mean excitatory rate: %.3f" % mean_rate_PC)
             print("Mean inhibitory rate: %.3f" % mean_rate_BC)
             print("Average exc. ripple freq: %.3f" % avg_ripple_freq_PC)
-            print("Exc. ripple power: %.3f" % ripple_power_PC)
+            print("Exc. ripple power: %.3f" % relative_ripple_power_PC)
             print("Average inh. ripple freq: %.3f" % avg_ripple_freq_BC)
-            print("Inh. ripple power: %.3f" % ripple_power_BC)
+            print("Inh. ripple power: %.3f" % relative_ripple_power_BC)
             print("Average LFP ripple freq: %.3f" % avg_ripple_freq_LFP)
-            print("LFP ripple power: %.3f" % ripple_power_LFP)
+            print("LFP ripple power: %.3f" % relative_ripple_power_LFP)
 
         results = {
             "multiplier": multiplier,
@@ -330,11 +330,14 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
             "mean_rate_PC": mean_rate_PC,
             "mean_rate_BC": mean_rate_BC,
             "avg_ripple_freq_PC": avg_ripple_freq_PC,
-            "ripple_power_PC": ripple_power_PC,
+            "absolute_ripple_power_PC": absolute_ripple_power_PC,
+            "relative_ripple_power_PC": relative_ripple_power_PC,
             "avg_ripple_freq_BC": avg_ripple_freq_BC,
-            "ripple_power_BC": ripple_power_BC,
+            "absolute_ripple_power_BC": absolute_ripple_power_BC,
+            "relative_ripple_power_BC": relative_ripple_power_BC,
             "avg_ripple_freq_LFP": avg_ripple_freq_LFP,
-            "ripple_power_LFP": ripple_power_LFP,
+            "absolute_ripple_power_LFP": absolute_ripple_power_LFP,
+            "relative_ripple_power_LFP": relative_ripple_power_LFP,
             "avg_gamma_freq_PC": avg_gamma_freq_PC,
             "absolute_gamma_power_PC": absolute_gamma_power_PC,
             "relative_gamma_power_PC": relative_gamma_power_PC,
