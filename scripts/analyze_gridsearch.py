@@ -15,10 +15,10 @@ for subdir in glob("{}/*/".format(sys.argv[1])):
     with open("{}/params.txt".format(subdir), "r") as params:
         g1, g2, g3, g4 = [float(p.strip("\n")) for p in params.readlines()]
 
-    wmx_mult = round(g1 * (0.02 / 0.15) * 1, 2)       # * wmx_PC_E
-    w_PC_I = round(g2 * (2.0 / 4.0) * 0.65, 2)
-    w_BC_E = round(g3 * (0.3 / 1.5) * 0.85, 2)
-    w_BC_I = round(g4 * (0.1) * 5., 2)
+    wmx_mult = round(g1, 2)       # * wmx_PC_E
+    w_PC_I = round(g2, 2)
+    w_BC_E = round(g3, 2)
+    w_BC_I = round(g4, 2)
 
     results_dict = {}
     with open("{}/results.txt".format(subdir), "r") as results_file:
@@ -100,7 +100,13 @@ variables = ["absolute_gamma_power_PC",
              "absolute_gamma_power_BC",
              "relative_gamma_power_BC",
              "absolute_gamma_power_LFP",
-             "relative_gamma_power_LFP"]
+             "relative_gamma_power_LFP",
+             "absolute_ripple_power_PC",
+             "relative_ripple_power_PC",
+             "absolute_ripple_power_BC",
+             "relative_ripple_power_BC",
+             "absolute_ripple_power_LFP",
+             "relative_ripple_power_LFP"]
 
 for variable in variables:
     plot_variable_as_heatmap(variable)

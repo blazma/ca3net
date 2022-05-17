@@ -269,24 +269,26 @@ if __name__ == "__main__":
             worker = pool.apply_async(grid_search_worker, (g1, g2, g3, g4, wmx_PC_E, save, seed, verbose))
     else:
 
+        """
+        # these values were calculated from pályastimulációs currents
+        # and so they are incorrect
         measured_conductances = {
-            "w_BC_E": {    #g3
-                "g_preCCh": 3.51,
-                "g_postCCh": 1.09,
-            },
-            "w_PC_E": {    # g1
-                "g_preCCh": 2.34,
-                "g_postCCh": 0.44
-            },
-            "w_PC_I": {    #g2
-                "g_preCCh": 2.82,
-                "g_postCCh": 0.9
-            },
-            "w_BC_I": {    #g4
-                "g_preCCh": 2.0,
-                "g_postCCh": 2.0
-            }
+            "w_BC_E": {"g_preCCh": 3.51, "g_postCCh": 1.09}, #g3 
+            "w_PC_E": {"g_preCCh": 2.34, "g_postCCh": 0.44}, #g1 
+            "w_PC_I": {"g_preCCh": 2.82, "g_postCCh": 0.90}, #g2 
+            "w_BC_I": {"g_preCCh": 2.00, "g_postCCh": 2.00}  #g4 
         }
+        """
+        measured_conductances = {
+            'w_PC_E': {'g_preCCh': 0.54, 'g_postCCh': 0.14}, # g1
+            'w_PC_I': {'g_preCCh': 5.28, 'g_postCCh': 1.48}, # g2
+            'w_BC_E': {'g_preCCh': 4.50, 'g_postCCh': 1.80}, # g3
+            'w_BC_I': {'g_preCCh': 3.95, 'g_postCCh': 1.11}, # g4
+        }
+
+        # these values come from literature for preCCh values
+        # and the postCCh values are calculated using
+        # the proportional change described in the manuscript
 
         gridpoints = OrderedDict()
         for g in measured_conductances:
