@@ -109,7 +109,7 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                 no_replay = 0.
             # *-1 since the algorithm tries to minimize...
             errors = -1. * np.array([gamma_peakE, gamma_peakI, no_subgamma_peakE, no_subgamma_peakI,
-                                     2 * relative_gamma_power_PC / 100., 2 * relative_gamma_power_BC / 100.,
+                                     relative_gamma_power_PC / 100., relative_gamma_power_BC / 100.,
                                      gamma_rateE, gamma_rateI, no_replay])
             return errors.tolist()
         else:
@@ -146,9 +146,10 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
 
         # gamma parameters, change SWR ones using proportions from experimental paper
         print("GEN: {}\tWORKER: {}\tGAM".format(self.gen_id, multiprocessing.current_process().name))
-        wmx_mult_ = (0.02 / 0.15) * wmx_mult_
-        w_PC_I_ = (2.0 / 4.0) * w_PC_I_
-        w_BC_E_ = (0.3 / 1.5) * w_BC_E_
+        wmx_mult_ = 0.255 * wmx_mult_
+        w_PC_I_ = 0.28 * w_PC_I_
+        w_BC_E_ = 0.4 * w_BC_E_
+        w_BC_I_ = 0.28 * w_BC_I_
         g_leak_PC = (2.5 / 3.3333) * 4.31475791937223 * nS
         tau_mem_PC = (80. / 60.) * 41.7488927175169 * ms
         Cm_PC = tau_mem_PC * g_leak_PC
