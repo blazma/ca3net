@@ -36,34 +36,27 @@ for subdir in glob("{}/*/".format(sys.argv[1])):
     data.append(results_dict)
 
 data_df = pandas.DataFrame(data)
-#del data_df['multiplier'], data_df['np.nan']
-
-pairs = [
-    ("wmx_mult", "w_PC_I"),
-    ("wmx_mult", "w_BC_E"),
-    ("wmx_mult", "w_BC_I"),
-    ("w_PC_I", "w_BC_E"),
-    ("w_PC_I", "w_BC_I"),
-    ("w_BC_E", "w_BC_I")
-]
-
-#fig, axes = plt.subplots(3,2)
-#cbar_ax = fig.add_axes([.91, .3, .03, .4])
-#vmax = max([data_df.groupby([w1, w2]).var()["gamma_power_PC"].max() for w1, w2 in pairs])
-#idx = 0
-#for w1, w2 in pairs:
-#    data_grouped = data_df.groupby([w1, w2]).var()["gamma_power_PC"].reset_index().pivot(w1, w2, "gamma_power_PC")
-#    seaborn.heatmap(data_grouped, ax=axes[idx % 3,idx % 2], vmin=0, vmax=vmax, cbar_ax=cbar_ax)
-#    idx += 1
-#plt.bar(list(range(len(data))), gamma_power_PC)
 
 wmx_mult_sorted = sorted(list(pandas.unique(data_df["wmx_mult"])))
 w_PC_I_sorted = sorted(list(pandas.unique(data_df["w_PC_I"])), reverse=True)
 w_BC_E_sorted = sorted(list(pandas.unique(data_df["w_BC_E"])))
 w_BC_I_sorted = sorted(list(pandas.unique(data_df["w_BC_I"])), reverse=True)
 
+def calculate_plausibility(variable):
+    # calculate if ripple osc is biologically plausible or has too high a frequency
+    # variable: peak_freq_PC, peak_freq_LFP, peak_freq_BC
+    plausibles = []
+    for datapoint in data_df[variable]:
+        if datapoint > 150.0 and datapoint < 220.0:  # SWR range
+            plausibles.append(1.0)
+        elif datapoint > 25.0 and datapoint < 100.0: # gamma range
+            plausibles.append(-1.0)
+        else:
+            plausibles.append(0.0)
+    data_df.insert(len(data_df.columns), "is_{}_plausible".format(variable), plausibles)
 
-def plot_variable_as_heatmap(variable):
+
+def plot_variable_as_heatmap(variable, colormap="rocket"):
     fig, axes = plt.subplots(3, 3, figsize=(12,12))
     fig.suptitle(variable)
     cbar_ax = fig.add_axes([.925, .3, .03, .4])
@@ -83,9 +76,9 @@ def plot_variable_as_heatmap(variable):
                     ]
                     val = datapoint[variable] #/ datapoint["ripple_power_LFP"]
                     heatmap_matrix[inner_y, inner_x] = float(val)
-            seaborn.heatmap(heatmap_matrix, ax=axes[outer_y, outer_x], vmin=0, vmax=vmax, cbar_ax=cbar_ax,
+            seaborn.heatmap(heatmap_matrix, ax=axes[outer_y, outer_x], vmax=vmax, cbar_ax=cbar_ax,
                             xticklabels = w_BC_E_sorted,
-                            yticklabels = w_BC_I_sorted)
+                            yticklabels = w_BC_I_sorted, cmap=colormap)
             axes[outer_y, outer_x].set_xlabel("w_BC_E")
             axes[outer_y, outer_x].set_ylabel("w_BC_I")
             fig.text(0.5, 0.94, 'wmx_mult', ha='center', fontsize=15)
@@ -108,6 +101,19 @@ variables = ["absolute_gamma_power_PC",
              "absolute_ripple_power_LFP",
              "relative_ripple_power_LFP"]
 
-for variable in variables:
-    plot_variable_as_heatmap(variable)
-    plot_variable_as_heatmap(variable)
+peak_vars = ["peak_freq_BC", "peak_freq_PC", "peak_freq_LFP"]
+for variable in peak_vars:
+    calculate_plausibility(variable)
+    plot_variable_as_heatmap("is_{}_plausible".format(variable), colormap="coolwarm")
+
+
+total_plausibility = numpy.zeros(data_df.shape[0])
+for variable in peak_vars:
+    total_plausibility += data_df["is_{}_plausible".format(variable)]
+data_df.insert(len(data_df.columns), "total_plausibility", total_plausibility)
+plot_variable_as_heatmap("total_plausibility", colormap="coolwarm")
+
+
+#for variable in variables:
+#    plot_variable_as_heatmap(variable)
+#    plot_variable_as_heatmap(variable)

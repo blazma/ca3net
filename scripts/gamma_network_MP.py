@@ -246,7 +246,7 @@ if __name__ == "__main__":
     seed = 12345
     save = False
     verbose = True
-    selected_only = False
+    selected_only = True
 
     f_in = "wmx_sym_0.5_linear.pkl"
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
@@ -256,12 +256,8 @@ if __name__ == "__main__":
 
     # set of problematic runs, to be re-run separately
     selections = [
-        [0.5, 1.0, 2.0, 2.0],
-        [1.0, 1.0, 2.0, 2.0],
-        [1.0, 2.0, 0.5, 2.0],
-        [2.0, 1.0, 2.0, 2.0],
-        [2.0, 2.0, 0.5, 1.0],
-        [2.0, 2.0, 0.5, 2.0]
+       #PC_E, PC_I, BC_E, BC_I
+        [1.9, 1.1, 1.1, 4.0],
     ]
     if selected_only:
         for selection in selections:
@@ -320,6 +316,13 @@ if __name__ == "__main__":
             "w_PC_I": [0.7, 0.9, 1.1],
             "w_BC_E": [1.1, 2.3, 3.5],
             "w_BC_I": [1.0, 2.0, 4.0]
+        }
+        # zooming yet again
+        gridpoints = {
+            "w_PC_E": [1.9, 2.0, 2.1],
+            "w_PC_I": [0.9, 1.0, 1.1],
+            "w_BC_E": [1.1, 1.7, 2.3],
+            "w_BC_I": [2.0, 4.0, 6.0]
         }
 
         for g1 in gridpoints["w_PC_E"]:
