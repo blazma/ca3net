@@ -313,6 +313,15 @@ if __name__ == "__main__":
         gridpoints["w_BC_I"][0] = gridpoints["w_BC_I"][1] * 0.5
         gridpoints["w_BC_I"][2] = gridpoints["w_BC_I"][1] * 2.0
 
+        # this is for a different analysis: "zooming in" to the SWR-gamma boundary of the may 14 run
+        # comment this variable out to run grid at experimental results
+        gridpoints = {
+            "w_PC_E": [1.9, 2.1, 2.3],
+            "w_PC_I": [0.7, 0.9, 1.1],
+            "w_BC_E": [1.1, 2.3, 3.5],
+            "w_BC_I": [1.0, 2.0, 4.0]
+        }
+
         for g1 in gridpoints["w_PC_E"]:
             for g2 in gridpoints["w_PC_I"]:
                 for g3 in gridpoints["w_BC_E"]:
