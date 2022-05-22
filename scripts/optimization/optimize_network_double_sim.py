@@ -61,10 +61,10 @@ if __name__ == "__main__":
 
     # parameters to be fitted as a list of: (name, lower bound, upper bound)
     # the order matters! if you want to add more parameters - update `run_sim.py` too
-    optconf = [("w_PC_I_", 0.1, 6.0),
-               ("w_BC_E_", 0.1, 7.0),
+    optconf = [("w_PC_I_", 0.1, 2.0),
+               ("w_BC_E_", 0.1, 2.0),
                ("w_BC_I_", 1.0, 8.0),
-               ("wmx_mult_", 0.5, 4.0),
+               ("wmx_mult_", 0.5, 2.0),
                ("w_PC_MF_", 15.0, 25.0),
                ("rate_MF_", 5.0, 20.0)]
     pnames = [name for name, _, _ in optconf]
