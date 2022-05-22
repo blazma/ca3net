@@ -35,7 +35,7 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
         # Parameters to be optimized
         self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval))
                        for name, minval, maxval in self.params]
-        self.swr_objectives = ["rippleE", "rippleI", "no_gamma_peakI", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
+        self.swr_objectives = ["ripple_peakE", "ripple_peakI", "no_gamma_peakI", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
         self.gam_objectives = ["gamma_peakE", "gamma_peakI",  "no_subgamma_peakE", "no_subgamma_peakI", "gamma_powerE", "gamma_powerI", "gamma_rateE", "gamma_rateI", "no_replay"]
         self.objectives = self.swr_objectives + self.gam_objectives
 
@@ -150,9 +150,17 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
 
         # gamma parameters, change SWR ones using proportions from experimental paper
         print("GEN: {}\tWORKER: {}\tGAM".format(self.gen_id, multiprocessing.current_process().name))
-        wmx_mult_ = (0.02 / 0.15) * wmx_mult_
-        w_PC_I_ = (2.0 / 4.0) * w_PC_I_
-        w_BC_E_ = (0.3 / 1.5) * w_BC_E_
+        CCh_scaling_factors = {
+            "w_PC_E": 0.255,
+            "w_PC_I": 0.28,
+            "w_BC_E": 0.4,
+            "w_BC_I": 0.28,  # no experimental data behind this one, assumed to be similar to w_PC_I
+        }
+        wmx_mult_ = CCh_scaling_factors["w_PC_E"] * wmx_mult_
+        w_PC_I_ = CCh_scaling_factors["w_PC_I"] * w_PC_I_
+        w_BC_E_ = CCh_scaling_factors["w_BC_E"] * w_BC_E_
+        w_BC_I_ = CCh_scaling_factors["w_BC_I"] * w_BC_I_
+
         g_leak_PC = (2.5 / 3.3333) * 4.31475791937223 * nS
         tau_mem_PC = (80. / 60.) * 41.7488927175169 * ms
         Cm_PC = tau_mem_PC * g_leak_PC
