@@ -209,11 +209,15 @@ def run_simulation(wmx_PC_E, g1, g2, g3, g4, save, seed, verbose=True):
 
 def grid_search_worker(g1, g2, g3, g4, wmx_PC_E, save, seed, verbose):
     start_time = time.time()
-    print("# creating directory for g1_{}__g2_{}__g3_{}__g4_{}".format(g1, g2, g3, g4))
-    gridsearch_output_dir = os.path.join(base_path, "gridsearch",
-                                         "g1_{}__g2_{}__g3_{}__g4_{}".format(g1, g2, g3, g4))
+    subdir_name = "g1_{}__g2_{}__g3_{}__g4_{}".format(g1, g2, g3, g4)
+    gridsearch_output_dir = os.path.join(base_path, "gridsearch", subdir_name)
     if not os.path.exists(gridsearch_output_dir):
+        print("# creating directory for {}".format(subdir_name))
         os.mkdir(gridsearch_output_dir)
+    else:
+        print("{} already exists! skipping!".format(subdir_name))
+        return
+
     with open(os.path.join(gridsearch_output_dir, "params.txt"), "w") as gridparams_file:
         gridparams_file.writelines([str(g1), "\n",
                                     str(g2), "\n",
@@ -246,12 +250,12 @@ if __name__ == "__main__":
     seed = 12345
     save = False
     verbose = True
-    selected_only = True
+    selected_only = False
 
     f_in = "wmx_sym_0.5_linear.pkl"
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
 
-    pool_size = 2
+    pool_size = 1
     pool = multiprocessing.Pool(pool_size)
 
     # set of problematic runs, to be re-run separately
@@ -266,6 +270,7 @@ if __name__ == "__main__":
     else:
 
         """
+        [PS]
         # these values were calculated from pályastimulációs currents
         # and so they are incorrect
         measured_conductances = {
@@ -305,10 +310,15 @@ if __name__ == "__main__":
         gridpoints["w_PC_E"][2] = measured_conductances["w_PC_E"]["g_postCCh"] / np.mean(wmx_PC_E_filt)
         gridpoints["w_PC_E"][1] = (gridpoints["w_PC_E"][0] + gridpoints["w_PC_E"][2]) / 2
 
+        """
+        [PS] this was only necessary for pályastimulációs conductances
         # since this one is the same for both preCch and PostCCh we'll perturbate it a little bit
         gridpoints["w_BC_I"][0] = gridpoints["w_BC_I"][1] * 0.5
         gridpoints["w_BC_I"][2] = gridpoints["w_BC_I"][1] * 2.0
+        """
 
+        """
+        [ZOOM]
         # this is for a different analysis: "zooming in" to the SWR-gamma boundary of the may 14 run
         # comment this variable out to run grid at experimental results
         gridpoints = {
@@ -323,6 +333,23 @@ if __name__ == "__main__":
             "w_PC_I": [0.9, 1.0, 1.1],
             "w_BC_E": [1.1, 1.7, 2.3],
             "w_BC_I": [2.0, 4.0, 6.0]
+        }
+        """
+
+        """
+        [OG SCALE SWR]
+        """
+        CCh_scaling_factors = {
+            "w_PC_E": 0.255,
+            "w_PC_I": 0.28,
+            "w_BC_E": 0.4,
+            "w_BC_I": 0.28,  # no experimental data behind this one, assumed to be similar to w_PC_I
+        }
+        gridpoints = {
+            "w_PC_E": [0.5 * CCh_scaling_factors["w_PC_E"],        CCh_scaling_factors["w_PC_E"],        2.0 * CCh_scaling_factors["w_PC_E"]],
+            "w_PC_I": [0.5 * CCh_scaling_factors["w_PC_I"] * 0.65, CCh_scaling_factors["w_PC_I"] * 0.65, 2.0 * CCh_scaling_factors["w_PC_I"] * 0.65],
+            "w_BC_E": [0.5 * CCh_scaling_factors["w_BC_E"] * 0.85, CCh_scaling_factors["w_BC_E"] * 0.85, 2.0 * CCh_scaling_factors["w_BC_E"] * 0.85],
+            "w_BC_I": [0.5 * CCh_scaling_factors["w_BC_I"] * 5.,   CCh_scaling_factors["w_BC_I"] * 5.,   2.0 * CCh_scaling_factors["w_BC_I"] * 5.]
         }
 
         for g1 in gridpoints["w_PC_E"]:

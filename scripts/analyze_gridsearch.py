@@ -56,11 +56,18 @@ def calculate_plausibility(variable):
     data_df.insert(len(data_df.columns), "is_{}_plausible".format(variable), plausibles)
 
 
-def plot_variable_as_heatmap(variable, colormap="rocket"):
+def plot_variable_as_heatmap(variable, colormap="rocket", vmin=None, vmax=None):
     fig, axes = plt.subplots(3, 3, figsize=(12,12))
     fig.suptitle(variable)
     cbar_ax = fig.add_axes([.925, .3, .03, .4])
-    vmax = data_df[variable].max() #/ data_df["ripple_power_LFP"]).max()
+
+    # colorbar min max values
+    vmax_, vmin_ = data_df[variable].max(), 0
+    if vmax:
+        vmax_ = vmax
+    if vmin:
+        vmin_ = vmin
+
     for outer_x, wmx_mult in enumerate(wmx_mult_sorted):
         axes[0][outer_x].set_title(wmx_mult, fontsize=20)
         for outer_y, w_PC_I in enumerate(w_PC_I_sorted):
@@ -76,7 +83,8 @@ def plot_variable_as_heatmap(variable, colormap="rocket"):
                     ]
                     val = datapoint[variable] #/ datapoint["ripple_power_LFP"]
                     heatmap_matrix[inner_y, inner_x] = float(val)
-            seaborn.heatmap(heatmap_matrix, ax=axes[outer_y, outer_x], vmax=vmax, cbar_ax=cbar_ax,
+            seaborn.heatmap(heatmap_matrix, ax=axes[outer_y, outer_x],
+                            vmin=vmin_, vmax=vmax_, cbar_ax=cbar_ax,
                             xticklabels = w_BC_E_sorted,
                             yticklabels = w_BC_I_sorted, cmap=colormap)
             axes[outer_y, outer_x].set_xlabel("w_BC_E")
@@ -104,16 +112,18 @@ variables = ["absolute_gamma_power_PC",
 peak_vars = ["peak_freq_BC", "peak_freq_PC", "peak_freq_LFP"]
 for variable in peak_vars:
     calculate_plausibility(variable)
-    plot_variable_as_heatmap("is_{}_plausible".format(variable), colormap="coolwarm")
-
+    plot_variable_as_heatmap("is_{}_plausible".format(variable), colormap="coolwarm", vmin=-3.0, vmax=3.0)
 
 total_plausibility = numpy.zeros(data_df.shape[0])
 for variable in peak_vars:
     total_plausibility += data_df["is_{}_plausible".format(variable)]
 data_df.insert(len(data_df.columns), "total_plausibility", total_plausibility)
-plot_variable_as_heatmap("total_plausibility", colormap="coolwarm")
+plot_variable_as_heatmap("total_plausibility", colormap="coolwarm", vmin=-3.0, vmax=3.0)
 
-
-#for variable in variables:
-#    plot_variable_as_heatmap(variable)
-#    plot_variable_as_heatmap(variable)
+for variable in variables:
+    if "relative" in variable:
+        plot_variable_as_heatmap(variable, vmin=0, vmax=100)
+        plot_variable_as_heatmap(variable, vmin=0, vmax=100)
+    else:
+        plot_variable_as_heatmap(variable)
+        plot_variable_as_heatmap(variable)

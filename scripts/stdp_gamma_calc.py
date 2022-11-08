@@ -1,41 +1,48 @@
 # -*- coding: utf8 -*-
 """
-`stdp.py` repeated 2 times (one spike train is 'unsorted' - see `generate_spike_trains.py`)
--> creates learned weight matrix for PC population representing 2 learned environments, used by spw*_2envs* scripts
-author: András Ecker last update: 08.2018
+Loads in hippocampal like spike train (produced by `generate_spike_train.py`) and runs STD learning rule in a recurrent spiking neuron population
+-> creates weight matrix for PC population, used by `spw*` scripts
+updated to produce symmetric STDP curve as reported in Mishra et al. 2016 - 10.1038/ncomms11552
+authors: András Ecker, Eszter Vértes, last update: 11.2017
 """
 
 import os, sys, warnings
-from brian2 import *
-set_device("cpp_standalone")  # speed up the simulation with generated C++ code
 import numpy as np
 import random as pyrandom
+from brian2 import *
+set_device("cpp_standalone")  # speed up the simulation with generated C++ code
 import matplotlib.pyplot as plt
-from helper import load_spike_trains, save_wmx, load_wmx
+from helper import load_spike_trains, save_wmx
 from plots import plot_STDP_rule, plot_wmx, plot_wmx_avg, plot_w_distr, save_selected_w, plot_weights
 
 
 warnings.filterwarnings("ignore")
 base_path = os.path.sep.join(os.path.abspath("__file__").split(os.path.sep)[:-2])
+connection_prob_PC = 0.1
+nPCs = 8000
 
-nPCs = 8000  # #{neurons}
 
-
-def learning_2nd_env(spiking_neurons, spike_times, taup, taum, Ap, Am, wmax, intermediate_wmx):
+def learning(spiking_neurons, spike_times, taup, taum, Ap, Am, wmax, w_init):
     """
-    Learns the second environment (very similar to `stdp.py/learning()` but initializes with a previous weight matrix)
-    :param spiking_neurons, spike_times, taup, taum, Ap, Am, wmax: see `stdp.py/learning()`
-    :param intermediate_wmx: weight matrix of the first environment
-    :return: weightmx: learned weight matrix (represents 2 different environments)
+    Takes a spiking group of neurons, connects the neurons sparsely with each other, and learns the weight 'pattern' via STDP:
+    exponential STDP: f(s) = A_p * exp(-s/tau_p) (if s > 0), where s=tpost_{spike}-tpre_{spike}
+    :param spiking_neurons, spike_times: np.arrays for Brian2's SpikeGeneratorGroup (list of lists created by `generate_spike_train.py`) - spike train used for learning
+    :param taup, taum: time constant of weight change (in ms)
+    :param Ap, Am: max amplitude of weight change
+    :param wmax: maximum weight (in S)
+    :param w_init: initial weights (in S)
+    :return weightmx: learned synaptic weights
     """
 
     np.random.seed(12345)
     pyrandom.seed(12345)
 
-    plot_STDP_rule(taup/ms, taum/ms, Ap/1e-9, Am/1e-9, "STDP_rule")
+    #plot_STDP_rule(taup/ms, taum/ms, Ap/1e-9, Am/1e-9, "STDP_rule")
 
     PC = SpikeGeneratorGroup(nPCs, spiking_neurons, spike_times*second)
 
+    # mimics Brian1's exponentialSTPD class, with interactions='all', update='additive'
+    # see more on conversion: http://brian2.readthedocs.io/en/stable/introduction/brian1_to_2/synapses.html
     STDP = Synapses(PC, PC,
             """
             w : 1
@@ -51,10 +58,8 @@ def learning_2nd_env(spiking_neurons, spike_times, taup, taum, Ap, Am, wmax, int
             w = clip(w + A_presyn, 0, wmax)
             """)
 
-    # initialize weights from the intermediate weight matrix
-    nonzero_weights = np.nonzero(intermediate_wmx)
-    STDP.connect(i=nonzero_weights[0], j=nonzero_weights[1])
-    STDP.w = intermediate_wmx[nonzero_weights].flatten()
+    STDP.connect(condition="i!=j", p=connection_prob_PC)
+    STDP.w = w_init
 
     run(400*second, report="text")
 
@@ -70,15 +75,14 @@ if __name__ == "__main__":
         STDP_mode = sys.argv[1]
     except:
         STDP_mode = "sym"
-
     assert STDP_mode in ["asym", "sym"]
 
     place_cell_ratio = 0.5
     linear = True
-
     f_in = "spike_trains_%.1f_linear.npz"%place_cell_ratio if linear else "spike_trains_%.1f.npz"%place_cell_ratio
-    f_in_wmx = "intermediate_wmx_%s_%.1f_linear.pkl"%(STDP_mode, place_cell_ratio) if linear else "intermediate_wmx_%s_%.1f.pkl"%(STDP_mode, place_cell_ratio)
-    f_out = "wmx_%s_%.1f_2envs_linear.pkl"%(STDP_mode, place_cell_ratio) if linear else "wmx_%s_%.1f_2envs.pkl"%(STDP_mode, place_cell_ratio)
+    f_out = "wmx_%s_%.1f_linear.pkl"%(STDP_mode, place_cell_ratio) if linear else "wmx_%s_%.1f.pkl"%(STDP_mode, place_cell_ratio)
+    #f_in = "intermediate_spike_trains_%.1f_linear.npz"%place_cell_ratio if linear else "intermediate_spike_trains_%.1f.npz"%place_cell_ratio
+    #f_out = "intermediate_wmx_%s_%.1f_linear.pkl"%(STDP_mode, place_cell_ratio) if linear else "intermediate_wmx_%s_%.1f.pkl"%(STDP_mode, place_cell_ratio)
 
     # STDP parameters (see `optimization/analyse_STDP.py`)
     if STDP_mode == "asym":
@@ -90,19 +94,17 @@ if __name__ == "__main__":
     elif STDP_mode == "sym":
         taup = taum = 62.5 * ms
         Ap = Am = 4e-3
-        wmax = 2e-8  # S
+        wmax_preCCh = 2.34e-9  # S
+        wmax_postCCh = 0.44e-9
         scale_factor = 0.62
+    w_init = 1e-10  # S
     Ap *= wmax; Am *= wmax  # needed to reproduce Brian1 results
 
-    f_name = os.path.join(base_path, "files", f_in)
-    spiking_neurons, spike_times = load_spike_trains(f_name)
+    npzf_name = os.path.join(base_path, "files", f_in)
+    spiking_neurons, spike_times = load_spike_trains(npzf_name)
 
-    pklf_name = os.path.join(base_path, "files", f_in_wmx)
-    intermediate_weightmx = load_wmx(pklf_name) / scale_factor  # (scale only once, at the end)
-
-    weightmx = learning_2nd_env(spiking_neurons, spike_times, taup, taum, Ap, Am, wmax, intermediate_weightmx)
+    weightmx = learning(spiking_neurons, spike_times, taup, taum, Ap, Am, wmax, w_init)
     weightmx *= scale_factor  # quick and dirty additional scaling! (in an ideal world the STDP parameters should be changed to include this scaling...)
-
 
     pklf_name = os.path.join(base_path, "files", f_out)
     save_wmx(weightmx, pklf_name)

@@ -209,7 +209,7 @@ if __name__ == "__main__":
                                                                                  save=save, seed=seed, verbose=verbose)
     results = analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC, seed=seed,
                               multiplier=1, linear=True, pklf_name=None, dir_name=None,
-                              analyse_replay=False, TFR=False, save=save, verbose=False)
+                              analyse_replay=False, TFR=False, save=save, verbose=True)
     if verbose:  # bypassing verbose=True in `analyse_results` with gamma related metrics
         print("Mean excitatory rate: %.3f" % results["mean_rate_PC"])
         print("Mean inhibitory rate: %.3f" % results["mean_rate_BC"])

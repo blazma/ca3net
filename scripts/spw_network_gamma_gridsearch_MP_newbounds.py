@@ -149,10 +149,10 @@ def run_simulation(wmx_PC_E, STDP_mode, g1, g2, g3, g4, cue, save, seed, verbose
     pyrandom.seed(seed)
 
     # synaptic weights (see `/optimization/optimize_network.py`)
-    wmx_PC_E = g1 * (0.02 / 0.15) * wmx_PC_E       # gamma
-    w_PC_I = g2 * (2.0 / 4.0) * 0.65  # nS       # gamma
-    w_BC_E = g3 * (0.3 / 1.5) * 0.85             # gamma
-    w_BC_I = g4 * (0.1) * 5.                     # gamma (manual)
+    wmx_PC_E = g1 * wmx_PC_E  # gamma
+    w_PC_I = g2  # nS       # gamma
+    w_BC_E = g3             # gamma
+    w_BC_I = g4             # gamma (manual)
     if STDP_mode == "asym":
         w_PC_MF = 21.5
     elif STDP_mode == "sym":
@@ -402,10 +402,14 @@ if __name__ == "__main__":
     pool_size = 2
     pool = multiprocessing.Pool(pool_size)
 
-    for g1 in [0.5, 1.0, 2.0]:
-        for g2 in [0.5, 1.0, 2.0]:
-            for g3 in [0.5, 1.0, 2.0]:
-                for g4 in [0.5, 1.0, 2.0]:
+    g1_bounds = [0.01, 2.5, 5.0, 7.5, 10.0]
+    g2_bounds = [0.01, 2.5, 5.0, 7.5, 10.0]
+    g3_bounds = [0.01, 2.5, 5.0, 7.5, 10.0]
+    g4_bounds = [0.01, 2.5, 5.0, 7.5, 10.0]
+    for g1 in g1_bounds:
+        for g2 in g2_bounds:
+            for g3 in g3_bounds:
+                for g4 in g4_bounds:
                     pool.apply_async(grid_search_worker, (g1,g2,g3,g4,))
     pool.close()
     pool.join()
