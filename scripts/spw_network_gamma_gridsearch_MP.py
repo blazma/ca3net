@@ -391,7 +391,7 @@ if __name__ == "__main__":
     verbose = True
     TFR = False
     linear = True
-    place_cell_ratio = 0.1
+    place_cell_ratio = 0.5
     seed = 12345
 
     f_in = "wmx_%s_%.1f_linear.pkl"%(STDP_mode, place_cell_ratio) if linear else "wmx_%s_%.1f.pkl" % (STDP_mode, place_cell_ratio)
