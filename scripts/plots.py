@@ -106,13 +106,15 @@ def plot_posterior_trajectory(X_posterior, fitted_path, R, fig_name, temporal_re
     plt.close(fig)
 
 
-def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_):
+def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_, gamma_lb=30, gamma_ub=100):
     """
     Saves figure with rate, its autocorrelation and PSD
     :param rate: firing rate - precalculated by `detect_oscillation.py/preprocess_spikes()`
     :param rate_ac: autocorrelation function of the rate (see `detect_oscillation.py/analyse_rate()`)
     :param f, Pxx: estimated PSD and frequencies used (see `detect_oscillation.py/analyse_rate()`)
     :param title_, color_, multiplier: outline and naming parameters
+    :param gamma_lb: lower bound of gamma range (defaults to 30 Hz)
+    :param gamma_ub: upper bound of gamma range (defaults to 100 Hz)
     """
 
     bin_ = 20
@@ -133,7 +135,7 @@ def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_):
         rate_ac_plot_mean = rate_ac[2:201]
     f = np.asarray(f)
     f_ripple = f[np.where((150 < f) & (f < 220))]; Pxx_ripple_plot = Pxx_plot_mean[np.where((150 < f) & (f < 220))]
-    f_gamma = f[np.where((30 < f) & (f < 100))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((30 < f) & (f < 100))]
+    f_gamma = f[np.where((gamma_lb < f) & (f < gamma_ub))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((gamma_lb < f) & (f < gamma_ub))]
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(3, 1, 1)
@@ -164,7 +166,7 @@ def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_):
         pass
     ax3.plot(f, Pxx_plot_mean, color=color_, marker="o")
     ax3.plot(f_ripple, Pxx_ripple_plot, "r-", marker="o", linewidth=1.5, label="ripple (150-220 Hz)")
-    ax3.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label="gamma (30-100 Hz)")
+    ax3.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label=f"gamma ({gamma_lb}-{gamma_ub} Hz)")
     ax3.set_title("Power Spectrum Density")
     ax3.set_xlim([0, 500])
     ax3.set_xlabel("Frequency (Hz)")
@@ -370,12 +372,14 @@ def plot_detailed(StateM, subset, multiplier_, plot_adaptation=True):
     fig.savefig(fig_name)
 
 
-def plot_LFP(t, LFP, f, Pxx, multiplier_):
+def plot_LFP(t, LFP, f, Pxx, multiplier_, gamma_lb=30, gamma_ub=100):
     """
     Saves plot of the estimated LFP and it's power spectrum (see `detect_oscillations.py/analyse_estimated_LFP()`)
     :param t: time vector used for the plot
     :param LFP: estimated LFP
     :param f, Pxx:
+    :param gamma_lb: lower bound of gamma range (defaults to 30 Hz)
+    :param gamma_ub: upper bound of gamma range (defaults to 100 Hz)
     """
 
     try:
@@ -387,7 +391,7 @@ def plot_LFP(t, LFP, f, Pxx, multiplier_):
         Pxx_plot_mean = 10 * np.log10(Pxx / max(Pxx))
 
     f_ripple = f[np.where((150 < f) & (f < 220))]; Pxx_ripple_plot = Pxx_plot_mean[np.where((150 < f) & (f < 220))]
-    f_gamma = f[np.where((30 < f) & (f < 100))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((30 < f) & (f < 100))]
+    f_gamma = f[np.where((gamma_lb < f) & (f < gamma_ub))]; Pxx_gamma_plot = Pxx_plot_mean[np.where((gamma_lb < f) & (f < gamma_ub))]
 
     fig = plt.figure(figsize=(10, 8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[2, 1])
@@ -407,7 +411,7 @@ def plot_LFP(t, LFP, f, Pxx, multiplier_):
         pass
     ax2.plot(f, Pxx_plot_mean, color="purple", marker="o")
     ax2.plot(f_ripple, Pxx_ripple_plot, "r-", marker="o", linewidth=1.5, label="ripple (150-220 Hz)")
-    ax2.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label="gamma (30-100 Hz)")
+    ax2.plot(f_gamma, Pxx_gamma_plot, "k-", marker="o", linewidth=1.5, label=f"gamma ({gamma_lb}-{gamma_ub} Hz)")
     ax2.set_title("Power Spectrum Density")
     ax2.set_xlim([0, 500])
     ax2.set_xlabel("Frequency (Hz)")

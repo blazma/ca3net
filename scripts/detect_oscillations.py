@@ -164,12 +164,14 @@ def ripple(f, Pxx, slice_idx=[], p_th=0.05):
         return avg_ripple_freq, ripple_power
 
 
-def gamma(f, Pxx, slice_idx=[], p_th=0.05):
+def gamma(f, Pxx, slice_idx=[], p_th=0.05, lb=30, ub=100):
     """
     Decides if there is a significant gamma freq. oscillation by applying Fisher g-test on the power spectrum
     :param f, Pxx: calculated power spectrum of the neural activity and frequencies used to calculate it (see `analyse_rate()`)
     :param slice_idx: time idx used to slice out high activity states (see `slice_high_activity()`)
     :param p_th: significance threshold for Fisher g-test
+    :param lb: lower bound of gamma range (defaults to 30 Hz)
+    :param ub: upper bound of gamma range (defaults to 100 Hz)
     :return: avg_gamma_freq, gamma_power: average frequency and power of the oscillation
     """
 
@@ -177,7 +179,7 @@ def gamma(f, Pxx, slice_idx=[], p_th=0.05):
     if slice_idx:
         p_vals, freqs, absolute_gamma_powers, relative_gamma_powers = [], [], [], []
         for i in range(Pxx.shape[0]):
-            Pxx_gamma = Pxx[i, :][np.where((30 < f) & (f < 100))]
+            Pxx_gamma = Pxx[i, :][np.where((lb < f) & (f < ub))]
             p_vals.append(_fisher(Pxx_gamma))
             freqs.append(Pxx_gamma.argmax())
             absolute_gamma_powers.append(sum(Pxx_gamma))
@@ -185,20 +187,20 @@ def gamma(f, Pxx, slice_idx=[], p_th=0.05):
         idx = np.where(np.asarray(p_vals) <= p_th)[0].tolist()
         if len(idx) >= 0.25*len(slice_idx):  # if at least 25% are significant
             avg_freq = np.mean(np.asarray(freqs)[idx])
-            avg_gamma_freq = f[np.where(30 < f)[0][0] + int(avg_freq)]
+            avg_gamma_freq = f[np.where(lb < f)[0][0] + int(avg_freq)]
         else:
             avg_gamma_freq = np.nan
         return avg_gamma_freq, np.mean(absolute_gamma_powers), np.mean(relative_gamma_powers)
     else:
-        Pxx_gamma = Pxx[np.where((30 < f) & (f < 100))]
+        Pxx_gamma = Pxx[np.where((lb < f) & (f < ub))]
         p_val = _fisher(Pxx_gamma)
-        avg_gamma_freq = f[np.where(30 < f)[0][0] + Pxx_gamma.argmax()] if p_val < p_th else np.nan
+        avg_gamma_freq = f[np.where(lb < f)[0][0] + Pxx_gamma.argmax()] if p_val < p_th else np.nan
         absolute_gamma_power = sum(Pxx_gamma)
         relative_gamma_power = (sum(Pxx_gamma) / sum(Pxx)) * 100
         return avg_gamma_freq, absolute_gamma_power, relative_gamma_power
 
 
-def lowfreq(f, Pxx, slice_idx=[], p_th=0.05):
+def lowfreq(f, Pxx, slice_idx=[], p_th=0.05, gamma_lb=30):
     """
     Decides if there is a significant sub gamma (alpha, beta) freq. oscillation by applying Fisher g-test on the power spectrum
     (This function is only used during optimizations to supress low freq. oscillations and ensure that the oscillation
@@ -206,6 +208,7 @@ def lowfreq(f, Pxx, slice_idx=[], p_th=0.05):
     :param f, Pxx: calculated power spectrum of the neural activity and frequencies used to calculate it (see `analyse_rate()`)
     :param slice_idx: time idx used to slice out high activity states (see `slice_high_activity()`)
     :param p_th: significance threshold for Fisher g-test
+    :param gamma_lb: lower bound of gamma frequency range (subgamma if below this), defaults to 30 Hz
     :return: avg_subgamma_freq, subgamma_power: average frequency and power of the oscillations
     """
 
@@ -213,7 +216,7 @@ def lowfreq(f, Pxx, slice_idx=[], p_th=0.05):
     if slice_idx:
         p_vals, freqs, subgamma_powers = [], [], []
         for i in range(Pxx.shape[0]):
-            Pxx_subgamma = Pxx[i, :][np.where(f < 30)]
+            Pxx_subgamma = Pxx[i, :][np.where(f < gamma_lb)]
             p_vals.append(_fisher(Pxx_subgamma))
             freqs.append(Pxx_subgamma.argmax())
             subgamma_powers.append((sum(Pxx_subgamma) / sum(Pxx[i, :])) * 100)
@@ -224,7 +227,7 @@ def lowfreq(f, Pxx, slice_idx=[], p_th=0.05):
             avg_subgamma_freq = np.nan
         return avg_subgamma_freq, np.mean(subgamma_powers)
     else:
-        Pxx_subgamma = Pxx[f < 30]
+        Pxx_subgamma = Pxx[f < gamma_lb]
         p_val = _fisher(Pxx_subgamma)
         avg_subgamma_freq = np.max(Pxx_subgamma) if p_val < p_th else np.nan
         subgamma_power = (sum(Pxx_subgamma) / sum(Pxx)) * 100

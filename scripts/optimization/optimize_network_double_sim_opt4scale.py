@@ -61,21 +61,21 @@ if __name__ == "__main__":
 
     # parameters to be fitted as a list of: (name, lower bound, upper bound)
     # the order matters! if you want to add more parameters - update `run_sim.py` too
-    s1, s2 = 0.98, 1.02
-    optconf = [("w_PC_I_", 0.1, 2.0),
-               ("w_BC_E_", 0.1, 2.0),
+    s1, s2 = 0.75, 1.25
+    optconf = [("w_PC_I_", 0.1, 8.0),
+               ("w_BC_E_", 0.1, 8.0),
                ("w_BC_I_", 1.0, 8.0),
-               ("wmx_mult_", 0.5, 2.0),
+               ("wmx_mult_", 0.5, 3.0),
                ("w_PC_MF_", 15.0, 25.0),
                ("rate_MF_", 5.0, 20.0),
                ("s_PC_E", s1*0.255, s2*0.255),
                ("s_PC_I", s1*0.28, s2*0.28),
                ("s_BC_E", s1*0.4, s2*0.4),
-               ("s_BC_I", s1*0.28, s2*0.28)]
+               ("s_BC_I", 0.1, 0.9)]
     pnames = [name for name, _, _ in optconf]
 
     offspring_size = 2
-    max_ngen = 2
+    max_ngen = 1
 
     pklf_name = os.path.join(base_path, "files", f_in)
     wmx_PC_E = load_wmx(pklf_name) * 1e9  # *1e9 nS conversion

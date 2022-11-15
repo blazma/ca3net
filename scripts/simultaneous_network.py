@@ -200,18 +200,23 @@ def copy_plots(subdir):
 
 def gamma_network(wmx_PC_E, save, seed, verbose):
     # parameters start out the same as SWR
-    w_PC_I = 1.41
-    w_BC_E = 1.15
-    w_BC_I = 5.36
-    wmx_mult = 1.68
-    w_PC_MF = 24.10
-    rate_MF = 15.96 * Hz
+    w_PC_I = 1.76
+    w_BC_E = 0.94
+    w_BC_I = 6.66
+    wmx_mult = 1.56
+    w_PC_MF = 21.96
+    rate_MF = 11.33 * Hz
+
+    s_PC_E = 0.26
+    s_PC_I = 0.28
+    s_BC_E = 0.34
+    s_BC_I = 0.4
 
     # some of them get tuned as described in manuscript
-    wmx_mult = (0.02 / 0.15) * wmx_mult
-    w_PC_I = (2.0 / 4.0) * w_PC_I
-    w_BC_E = (0.3 / 1.5) * w_BC_E
-    w_BC_I = 0.1 * w_BC_I
+    wmx_mult = s_PC_E * wmx_mult
+    w_PC_I = s_PC_I * w_PC_I
+    w_BC_E = s_BC_E * w_BC_E
+    w_BC_I = s_BC_I * w_BC_I
     g_leak_PC = (2.5 / 3.3333) * 4.31475791937223 * nS
     tau_mem_PC = (80. / 60.) * 41.7488927175169 * ms
     Cm_PC = tau_mem_PC * g_leak_PC
@@ -227,12 +232,13 @@ def gamma_network(wmx_PC_E, save, seed, verbose):
     #copy_plots("gamma")
 
 def swr_network(wmx_PC_E, save, seed, verbose):
-    w_PC_I = 1.41
-    w_BC_E = 1.15
-    w_BC_I = 5.36
-    wmx_mult = 1.68
-    w_PC_MF = 24.10
-    rate_MF = 15.96 * Hz
+    w_PC_I = 1.76
+    w_BC_E = 0.94
+    w_BC_I = 6.66
+    wmx_mult = 1.56
+    w_PC_MF = 21.96
+    rate_MF = 11.33 * Hz
+
     g_leak_PC = 4.31475791937223 * nS
     tau_mem_PC = 41.7488927175169 * ms
     Cm_PC = tau_mem_PC * g_leak_PC
@@ -246,7 +252,7 @@ def swr_network(wmx_PC_E, save, seed, verbose):
     results = analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC, seed=seed,
                               multiplier=1, linear=True, pklf_name=None, dir_name=None,
                               analyse_replay=False, TFR=False, save=save, verbose=False)
-    copy_plots("swr")
+    #copy_plots("swr")
 
 
 if __name__ == "__main__":
@@ -260,4 +266,4 @@ if __name__ == "__main__":
     #swr_network(wmx_PC_E, save, seed, verbose)
     #start_scope()
     gamma_network(wmx_PC_E, save, seed, verbose)
-    plt.show()
+    #plt.show()

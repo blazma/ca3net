@@ -35,8 +35,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
         # Parameters to be optimized
         self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval))
                        for name, minval, maxval in self.params]
-        self.swr_objectives = ["ripple_peakE", "ripple_peakI", "no_gamma_peakI", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
-        self.gam_objectives = ["gamma_peakE", "gamma_peakI",  "no_subgamma_peakE", "no_subgamma_peakI", "gamma_powerE", "gamma_powerI", "gamma_rateE", "gamma_rateI", "no_replay"]
+        self.swr_objectives = ["ripple_peakE", "ripple_peakI", "no_gamma_power", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
+        self.gam_objectives = ["gamma_peakE", "gamma_peakI",  "no_subgamma_power_PC", "no_subgamma_power_BC", "gamma_powerE", "gamma_powerI", "gamma_rateE", "gamma_rateI"]
         self.objectives = self.swr_objectives + self.gam_objectives
 
     def generate_model(self, individual, verbose=False):
@@ -57,22 +57,22 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
             mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000.0, slice_idx)
             avg_ripple_freq_PC, ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx)
             avg_ripple_freq_BC, ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx)
-            avg_gamma_freq_PC, _, gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx)
-            avg_gamma_freq_BC, _, gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx)
+            avg_gamma_freq_PC, _, gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx, lb=20)
+            avg_gamma_freq_BC, _, gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx, lb=20)
 
             # look for significant ripple peak close to 180 Hz
             ripple_peakE = np.exp(-1 / 2 * (avg_ripple_freq_PC - 180.) ** 2 / 20 ** 2) if not np.isnan(
                 avg_ripple_freq_PC) else 0.
             ripple_peakI = np.exp(-1 / 2 * (avg_ripple_freq_BC - 180.) ** 2 / 20 ** 2) if not np.isnan(
                 avg_ripple_freq_BC) else 0.
-            # penalize gamma peak (in inhibitory pop) - binary variable, which might not be the best for this algo.
-            no_gamma_peakI = 1. if np.isnan(avg_gamma_freq_BC) else 0.
+            # penalize gamma power
+            no_gamma_power = 1-gamma_power_BC/100.
             # look for "low" exc. population rate (around 2.5 Hz)
             ripple_rateE = np.exp(-1 / 2 * (mean_rate_PC - 1.0) ** 2 / 3.0 ** 2)    # from Hájos et al 2013
             ripple_rateI = np.exp(-1 / 2 * (mean_rate_PC - 10.0) ** 2 / 10.0 ** 2)   # from Hájos et al 2013
             # *-1 since the algorithm tries to minimize...
             errors = -1. * np.array(
-                [ripple_peakE, ripple_peakI, no_gamma_peakI, ripple_power_PC / 100., ripple_power_BC / 100.,
+                [ripple_peakE, ripple_peakI, no_gamma_power, ripple_power_PC / 100., ripple_power_BC / 100.,
                  ripple_rateE, ripple_rateI])
             return errors.tolist()
         else:
@@ -91,30 +91,24 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                                                                                           normalize=True)
             mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000.0, slice_idx,
                                                                                           normalize=True)
-            avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx)
-            avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx)
-            avg_subgamma_freq_PC, subgamma_power_PC = lowfreq(f_PC, Pxx_PC, slice_idx)
-            avg_subgamma_freq_BC, subgamma_power_BC = lowfreq(f_BC, Pxx_BC, slice_idx)
+            avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx, p_th=1, lb=20)  # p_th set to 1 so that any gamma oscillation will be considered significant
+            avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx, p_th=1, lb=20)
+            avg_subgamma_freq_PC, subgamma_power_PC = lowfreq(f_PC, Pxx_PC, slice_idx, gamma_lb=30)
+            avg_subgamma_freq_BC, subgamma_power_BC = lowfreq(f_BC, Pxx_BC, slice_idx, gamma_lb=30)
 
             # look for significant gamma peak close to 30 Hz
             gamma_peakE = np.exp(-1 / 2 * (avg_gamma_freq_PC - 30.) ** 2 / 10 ** 2) if not np.isnan(avg_gamma_freq_PC) else 0.
             gamma_peakI = np.exp(-1 / 2 * (avg_gamma_freq_BC - 30.) ** 2 / 10 ** 2) if not np.isnan(avg_gamma_freq_BC) else 0.
-            # penalize sub gamma peaks - binary variable, which might not be the best for this algo.
-            no_subgamma_peakE = 1. if np.isnan(avg_subgamma_freq_PC) else 0.
-            no_subgamma_peakI = 1. if np.isnan(avg_subgamma_freq_BC) else 0.
+            # penalize sub gamma power
+            no_subgamma_power_PC = 1.-subgamma_power_PC/100.
+            no_subgamma_power_BC = 1.-subgamma_power_BC/100.
             # look for "low" exc. population rate (around 1.0 Hz)
             gamma_rateE = np.exp(-1 / 2 * (mean_rate_PC - 5.0) ** 2 / 3.0 ** 2)    # search for mean of 5.0 with a std of 3.0
-            gamma_rateI = np.exp(-1 / 2 * (mean_rate_PC - 25.0) ** 2 / 10.0 ** 2)   # search for mean of 25. with a std. of 10.0
-            # penalize replay (only in circular env)
-            if not self.linear:
-                replay_ROI = np.where((150 <= bin_edges_PC) & (bin_edges_PC <= 850))
-                no_replay = 3 if np.isnan(replay_circular(ISI_hist_PC[replay_ROI])) else 0.
-            else:
-                no_replay = 0.
+            gamma_rateI = np.exp(-1 / 2 * (mean_rate_BC - 25.0) ** 2 / 10.0 ** 2)   # search for mean of 25. with a std. of 10.0
             # *-1 since the algorithm tries to minimize...
-            errors = -1. * np.array([gamma_peakE, gamma_peakI, no_subgamma_peakE, no_subgamma_peakI,
+            errors = -1. * np.array([gamma_peakE, gamma_peakI, no_subgamma_power_PC, no_subgamma_power_BC,
                                      relative_gamma_power_PC / 100., relative_gamma_power_BC / 100.,
-                                     gamma_rateE, gamma_rateI, no_replay])
+                                     gamma_rateE, gamma_rateI])
             return errors.tolist()
         else:
             return [0.]*len(self.gam_objectives)
@@ -122,11 +116,11 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
     def save_output(self, individual_swr, individual_gam, errors):
         if not os.path.isdir("./errors"):
             os.mkdir("./errors")
-        with open("errors/GEN-{}_{}_errors.txt".format(self.gen_id, multiprocessing.current_process().name), "w") as errors_file:
+        with open("errors/{}_errors.txt".format(multiprocessing.current_process().name), "w") as errors_file:
             for idx_obj, obj in enumerate(self.objectives):
                 errors_file.writelines([obj, "=", str(errors[idx_obj]), "\n"])
         param_names = ["w_PC_I_", "w_BC_E_", "w_BC_I_", "wmx_mult_", "w_PC_MF_", "rate_MF_", "g_leak_PC", "tau_mem_PC", "Cm_PC", "Vrest_PC", "Vrest_BC"]
-        with open("errors/GEN-{}_{}_params.txt".format(self.gen_id, multiprocessing.current_process().name), "w") as params_file:
+        with open("errors/{}_params.txt".format(multiprocessing.current_process().name), "w") as params_file:
             params_file.writelines(["param_name", ",", "swr", ",", "gamma", "\n"])
             for idx_param, param_name in enumerate(param_names):
                 params_file.writelines([param_name, ",", str(individual_swr[idx_param]), ",", str(individual_gam[idx_param]), "\n"])
