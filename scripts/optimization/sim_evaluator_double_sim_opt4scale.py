@@ -8,7 +8,6 @@ import os, sys, traceback, gc
 import numpy as np
 from brian2 import *
 import bluepyopt as bpop
-import run_sim as sim
 base_path = os.path.sep.join(os.path.abspath("__file__").split(os.path.sep)[:-3])
 # add "scripts" directory to the path (to import modules)
 sys.path.insert(0, os.path.sep.join([base_path, "scripts"]))
@@ -35,13 +34,15 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
         # Parameters to be optimized
         self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval))
                        for name, minval, maxval in self.params]
-        self.swr_objectives = ["ripple_peakE", "ripple_peakI", "no_gamma_power", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
+        self.swr_objectives = ["ripple_peakE", "ripple_peakI", "no_gamma_power_PC", "no_gamma_power_BC", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
         self.gam_objectives = ["gamma_peakE", "gamma_peakI",  "no_subgamma_power_PC", "no_subgamma_power_BC", "gamma_powerE", "gamma_powerI", "gamma_rateE", "gamma_rateI"]
         self.objectives = self.swr_objectives + self.gam_objectives
 
     def generate_model(self, individual, verbose=False):
+        from run_sim import run_simulation
+
         """Runs single simulation (see `run_sim.py`) and returns monitors"""
-        SM_PC, SM_BC, RM_PC, RM_BC = sim.run_simulation(self.Wee, *individual, verbose=verbose)
+        SM_PC, SM_BC, RM_PC, RM_BC = run_simulation(self.Wee, *individual, verbose=verbose)
         return SM_PC, SM_BC, RM_PC, RM_BC
 
     def evaluate_errors_swr(self, SM_PC, SM_BC, RM_PC, RM_BC):
@@ -55,10 +56,10 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
             slice_idx = [] if not self.linear else slice_high_activity(rate_PC, th=2, min_len=260)
             mean_rate_PC, rate_ac_PC, max_ac_PC, t_max_ac_PC, f_PC, Pxx_PC = analyse_rate(rate_PC, 1000.0, slice_idx)
             mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000.0, slice_idx)
-            avg_ripple_freq_PC, ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx)
-            avg_ripple_freq_BC, ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx)
-            avg_gamma_freq_PC, _, gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx, lb=20)
-            avg_gamma_freq_BC, _, gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx, lb=20)
+            avg_ripple_freq_PC, relative_ripple_power_PC = ripple(f_PC, Pxx_PC, slice_idx, p_th=1) # p_th set to 1 so that any swr oscillation will be considered significant
+            avg_ripple_freq_BC, relative_ripple_power_BC = ripple(f_BC, Pxx_BC, slice_idx, p_th=1)
+            avg_gamma_freq_PC, _, relative_gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx, lb=20)
+            avg_gamma_freq_BC, _, relative_gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx, lb=20)
 
             # look for significant ripple peak close to 180 Hz
             ripple_peakE = np.exp(-1 / 2 * (avg_ripple_freq_PC - 180.) ** 2 / 20 ** 2) if not np.isnan(
@@ -66,14 +67,16 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
             ripple_peakI = np.exp(-1 / 2 * (avg_ripple_freq_BC - 180.) ** 2 / 20 ** 2) if not np.isnan(
                 avg_ripple_freq_BC) else 0.
             # penalize gamma power
-            no_gamma_power = 1-gamma_power_BC/100.
+            no_gamma_power_PC = 1-relative_gamma_power_PC/100.
+            no_gamma_power_BC = 1-relative_gamma_power_BC/100.
             # look for "low" exc. population rate (around 2.5 Hz)
             ripple_rateE = np.exp(-1 / 2 * (mean_rate_PC - 1.0) ** 2 / 3.0 ** 2)    # from Hájos et al 2013
             ripple_rateI = np.exp(-1 / 2 * (mean_rate_PC - 10.0) ** 2 / 10.0 ** 2)   # from Hájos et al 2013
             # *-1 since the algorithm tries to minimize...
-            errors = -1. * np.array(
-                [ripple_peakE, ripple_peakI, no_gamma_power, ripple_power_PC / 100., ripple_power_BC / 100.,
-                 ripple_rateE, ripple_rateI])
+            errors = -1. * np.array([ripple_peakE, ripple_peakI,
+                                     2 * no_gamma_power_PC, 2 * no_gamma_power_BC,
+                                     2 * relative_ripple_power_PC / 100., 2 * relative_ripple_power_BC / 100.,
+                                     ripple_rateE, ripple_rateI])
             return errors.tolist()
         else:
             return [0.]*len(self.swr_objectives)
@@ -91,8 +94,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                                                                                           normalize=True)
             mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000.0, slice_idx,
                                                                                           normalize=True)
-            avg_gamma_freq_PC, absolute_gamma_power_PC, relative_gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx, p_th=1, lb=20)  # p_th set to 1 so that any gamma oscillation will be considered significant
-            avg_gamma_freq_BC, absolute_gamma_power_BC, relative_gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx, p_th=1, lb=20)
+            avg_gamma_freq_PC, _, relative_gamma_power_PC = gamma(f_PC, Pxx_PC, slice_idx, p_th=1, lb=20)  # p_th set to 1 so that any gamma oscillation will be considered significant
+            avg_gamma_freq_BC, _, relative_gamma_power_BC = gamma(f_BC, Pxx_BC, slice_idx, p_th=1, lb=20)
             avg_subgamma_freq_PC, subgamma_power_PC = lowfreq(f_PC, Pxx_PC, slice_idx, gamma_lb=30)
             avg_subgamma_freq_BC, subgamma_power_BC = lowfreq(f_BC, Pxx_BC, slice_idx, gamma_lb=30)
 
@@ -106,8 +109,9 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
             gamma_rateE = np.exp(-1 / 2 * (mean_rate_PC - 5.0) ** 2 / 3.0 ** 2)    # search for mean of 5.0 with a std of 3.0
             gamma_rateI = np.exp(-1 / 2 * (mean_rate_BC - 25.0) ** 2 / 10.0 ** 2)   # search for mean of 25. with a std. of 10.0
             # *-1 since the algorithm tries to minimize...
-            errors = -1. * np.array([gamma_peakE, gamma_peakI, no_subgamma_power_PC, no_subgamma_power_BC,
-                                     relative_gamma_power_PC / 100., relative_gamma_power_BC / 100.,
+            errors = -1. * np.array([gamma_peakE, gamma_peakI,
+                                     2 * no_subgamma_power_PC, 2 * no_subgamma_power_BC,
+                                     2 * relative_gamma_power_PC / 100., 2 * relative_gamma_power_BC / 100.,
                                      gamma_rateE, gamma_rateI])
             return errors.tolist()
         else:

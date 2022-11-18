@@ -210,7 +210,7 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
 
 def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC, seed,
                     multiplier, linear, pklf_name, dir_name,
-                    analyse_replay=True, TFR=True, save=True, verbose=True):
+                    analyse_replay=True, TFR=True, save=True, verbose=True, gamma_lb=30, gamma_ub=100):
     """
     Analyses results from simulations (see `detect_oscillations.py`)
     :param SM_PC, SM_BC, RM_PC, RM_BC: Brian2 spike and rate monitors of PC and BC populations (see `run_simulation()`)
@@ -224,6 +224,8 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
     :param TFR: bool for calculating time freq. repr. (using wavelet analysis) or not
     :param save: bool for saving results
     :param verbose: bool for printing results or not
+    :param gamma_lb: lower bound of gamma range (defaults to 30 Hz)
+    :param gamma_ub: upper bound of gamma range (defaults to 100 Hz)
     """
 
     if SM_PC.num_spikes > 0 and SM_BC.num_spikes > 0:  # check if there is any activity
@@ -261,11 +263,11 @@ def analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC,
 
         mean_rate_PC, rate_ac_PC, max_ac_PC, t_max_ac_PC, f_PC, Pxx_PC = analyse_rate(rate_PC, 1000., slice_idx)
         mean_rate_BC, rate_ac_BC, max_ac_BC, t_max_ac_BC, f_BC, Pxx_BC = analyse_rate(rate_BC, 1000., slice_idx)
-        plot_PSD(rate_PC, rate_ac_PC, f_PC, Pxx_PC, "PC_population", "blue", multiplier_=multiplier)
-        plot_PSD(rate_BC, rate_ac_BC, f_BC, Pxx_BC, "BC_population", "green", multiplier_=multiplier)
+        plot_PSD(rate_PC, rate_ac_PC, f_PC, Pxx_PC, "PC_population", "blue", multiplier_=multiplier, gamma_lb=gamma_lb, gamma_ub=gamma_ub)
+        plot_PSD(rate_BC, rate_ac_BC, f_BC, Pxx_BC, "BC_population", "green", multiplier_=multiplier, gamma_lb=gamma_lb, gamma_ub=gamma_ub)
 
         t_LFP, LFP, f_LFP, Pxx_LFP = analyse_estimated_LFP(StateM_PC, selection, slice_idx)
-        plot_LFP(t_LFP, LFP, f_LFP, Pxx_LFP, multiplier_=multiplier)
+        plot_LFP(t_LFP, LFP, f_LFP, Pxx_LFP, multiplier_=multiplier, gamma_lb=gamma_lb, gamma_ub=gamma_ub)
 
         if save:
             save_LFP(t_LFP, LFP, seed)

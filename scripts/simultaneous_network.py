@@ -198,25 +198,13 @@ def copy_plots(subdir):
             filename = os.path.join(path, name)
             shutil.copy(filename, fig_subdir)
 
-def gamma_network(wmx_PC_E, save, seed, verbose):
-    # parameters start out the same as SWR
-    w_PC_I = 1.76
-    w_BC_E = 0.94
-    w_BC_I = 6.66
-    wmx_mult = 1.56
-    w_PC_MF = 21.96
-    rate_MF = 11.33 * Hz
-
-    s_PC_E = 0.26
-    s_PC_I = 0.28
-    s_BC_E = 0.34
-    s_BC_I = 0.4
-
-    # some of them get tuned as described in manuscript
+def gamma_network(gam_params, wmx_PC_E, save, seed, verbose):
+    w_PC_I, w_BC_E, w_BC_I, wmx_mult, w_PC_MF, rate_MF, s_PC_E, s_PC_I, s_BC_E, s_BC_I = gam_params
     wmx_mult = s_PC_E * wmx_mult
     w_PC_I = s_PC_I * w_PC_I
     w_BC_E = s_BC_E * w_BC_E
     w_BC_I = s_BC_I * w_BC_I
+
     g_leak_PC = (2.5 / 3.3333) * 4.31475791937223 * nS
     tau_mem_PC = (80. / 60.) * 41.7488927175169 * ms
     Cm_PC = tau_mem_PC * g_leak_PC
@@ -228,16 +216,11 @@ def gamma_network(wmx_PC_E, save, seed, verbose):
     SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC = run_simulation(params, save=save, seed=seed, verbose=verbose)
     results = analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC, seed=seed,
                               multiplier=1, linear=True, pklf_name=None, dir_name=None,
-                              analyse_replay=False, TFR=False, save=save, verbose=False)
-    #copy_plots("gamma")
+                              analyse_replay=False, TFR=False, save=save, verbose=False, gamma_lb=20)
+    return SM_PC, SM_BC, RM_PC, RM_BC
 
-def swr_network(wmx_PC_E, save, seed, verbose):
-    w_PC_I = 1.76
-    w_BC_E = 0.94
-    w_BC_I = 6.66
-    wmx_mult = 1.56
-    w_PC_MF = 21.96
-    rate_MF = 11.33 * Hz
+def swr_network(swr_params, wmx_PC_E, save, seed, verbose):
+    w_PC_I, w_BC_E, w_BC_I, wmx_mult, w_PC_MF, rate_MF = swr_params
 
     g_leak_PC = 4.31475791937223 * nS
     tau_mem_PC = 41.7488927175169 * ms
@@ -246,13 +229,12 @@ def swr_network(wmx_PC_E, save, seed, verbose):
     Vrest_BC = -74.74167987795019 * mV
     wmx_PC_E = wmx_mult * wmx_PC_E
 
-
     params = [w_PC_I, w_BC_E, w_BC_I, wmx_PC_E, w_PC_MF, rate_MF, g_leak_PC, tau_mem_PC, Cm_PC, Vrest_PC, Vrest_BC]
     SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC = run_simulation(params, save=save, seed=seed, verbose=verbose)
     results = analyse_results(SM_PC, SM_BC, RM_PC, RM_BC, selection, StateM_PC, StateM_BC, seed=seed,
                               multiplier=1, linear=True, pklf_name=None, dir_name=None,
-                              analyse_replay=False, TFR=False, save=save, verbose=False)
-    #copy_plots("swr")
+                              analyse_replay=False, TFR=False, save=save, verbose=False, gamma_lb=20)
+    return SM_PC, SM_BC, RM_PC, RM_BC
 
 
 if __name__ == "__main__":
@@ -263,7 +245,20 @@ if __name__ == "__main__":
     f_in = "wmx_sym_0.5_linear.pkl"
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
 
-    #swr_network(wmx_PC_E, save, seed, verbose)
-    #start_scope()
-    gamma_network(wmx_PC_E, save, seed, verbose)
-    #plt.show()
+    w_PC_I = 7.99  # 1.76
+    w_BC_E = 0.42  # 0.94
+    w_BC_I = 6.46  # 6.66
+    wmx_mult = 2.48  # 1.56
+    w_PC_MF = 22.99  # 21.96
+    rate_MF = 13.79 * Hz  # 11.33
+
+    s_PC_E = 0.19  # 0.26
+    s_PC_I = 0.30  # 0.28
+    s_BC_E = 0.38  # 0.34
+    s_BC_I = 0.34  # 0.4 ez nem ennyi volt
+
+    params_swr = [w_PC_I, w_BC_E, w_BC_I, wmx_mult, w_PC_MF, rate_MF]
+    params_gam = params_swr + [s_PC_E, s_PC_I, s_BC_E, s_BC_I]
+
+    swr_network(params_swr, wmx_PC_E, save, seed, verbose)
+    #gamma_network(params_gam, wmx_PC_E, save, seed, verbose)
