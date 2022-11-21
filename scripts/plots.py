@@ -6,13 +6,13 @@ authors: András Ecker, Bence Bagi last update: 02.2019
 
 import os
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from helper import _avg_rate
 
 
-sns.set(style="ticks", context="notebook")
+#sns.set(style="ticks", context="notebook")
 base_path = os.path.sep.join(os.path.abspath(__file__).split(os.path.sep)[:-2])
 fig_dir = os.path.join(base_path, "figures")
 
@@ -50,7 +50,7 @@ def plot_raster(spike_times, spiking_neurons, rate, hist, slice_idx, color_, mul
     avg_rate = _avg_rate(rate, bin_)
 
     ax2 = fig.add_subplot(gs[1])
-    sns.despine(ax=ax2)
+    #sns.despine(ax=ax2)
     ax2.bar(np.linspace(0, len_sim, len(avg_rate)), avg_rate, width=bin_, align="edge", color=color_, edgecolor="black", linewidth=0.5, alpha=0.9)
     if slice_idx is not None:
         for bounds in slice_idx:
@@ -61,7 +61,7 @@ def plot_raster(spike_times, spiking_neurons, rate, hist, slice_idx, color_, mul
     ax2.set_ylabel("Rate (Hz)")
 
     ax3 = fig.add_subplot(gs[2])
-    sns.despine(ax=ax3)
+    #sns.despine(ax=ax3)
     ax3.bar(hist[1][:-1], hist[0], width=50, align="edge", color=color_, edgecolor="black", linewidth=0.5, alpha=0.9)  # width=50 comes from bins=20
     if slice_idx is None:
         ax3.axvline(150, ls="--", c="gray", label="ROI for replay analysis")
@@ -173,7 +173,7 @@ def plot_PSD(rate, rate_ac, f, Pxx, title_, color_, multiplier_, gamma_lb=30, ga
     ax3.set_ylabel("PSD (dB)")
     ax3.legend()
 
-    sns.despine()
+    #sns.despine()
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "%.2f_%s.png"%(multiplier_, title_))
     fig.savefig(fig_name)
@@ -291,14 +291,14 @@ def plot_zoomed(spike_times, spiking_neurons, rate, title_, color_, multiplier_,
         ax.legend()
 
     ax2 = fig.add_subplot(gs[1])
-    sns.despine(ax=ax2)
+    #sns.despine(ax=ax2)
     ax2.bar(np.linspace(zoom_from, len_sim, len(avg_rate)), avg_rate, width=bin_, align="edge", color=color_, edgecolor="black", linewidth=0.5, alpha=0.9)
     ax2.set_xlim([zoom_from, len_sim])
     ax2.set_ylabel("Rate (Hz)")
 
     if StateM:
         ax3 = fig.add_subplot(gs[2])
-        sns.despine(ax=ax3)
+        #sns.despine(ax=ax3)
         if len(idx) != 0:
             ax3.plot(t[np.where((zoom_from <= t) & (t < len_sim))], v[np.where((zoom_from <= t) & (t < len_sim))], linewidth=2, c=color_,)
             tmp = spike_th_PC * np.ones_like(idx, dtype=np.float) if PC_pop else spike_th_BC * np.ones_like(idx, dtype=np.float)
@@ -366,7 +366,7 @@ def plot_detailed(StateM, subset, multiplier_, plot_adaptation=True):
     ax4.set_xlim([zoom_from, len_sim])
     ax4.legend()
 
-    sns.despine()
+    #sns.despine()
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "%.2f_PC_population_zoomed_detailed.png"%multiplier_)
     fig.savefig(fig_name)
@@ -418,7 +418,7 @@ def plot_LFP(t, LFP, f, Pxx, multiplier_, gamma_lb=30, gamma_ub=100):
     ax2.set_ylabel("PSD (dB)")
     ax2.legend()
 
-    sns.despine()
+    #sns.despine()
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "%.2f_LFP.png"%multiplier_)
     fig.savefig(fig_name)
@@ -447,7 +447,7 @@ def plot_step_sizes(gamma_LFP, step_sizes, avg_step_size, delta_t, fig_name):
 
     t = np.linspace(delta_t/2, t_end-delta_t/2, len(step_sizes))
     ax2 = fig.add_subplot(2, 1, 2)
-    sns.despine()
+    #sns.despine()
     ax2.axhline(avg_step_size, color="gray", ls="--", zorder=1)
     ax2.plot(t, step_sizes, "k-", lw=1.5, zorder=1)
     ax2.scatter(t, step_sizes, color="red", zorder=2)
@@ -471,10 +471,10 @@ def plot_step_size_distr(step_sizes, avg_step_sizes, fig_name):
 
     fig = plt.figure(figsize=(10, 6.5))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine()
+    #sns.despine()
 
-    sns.distplot(step_sizes, ax=ax, kde=False, rug=False, norm_hist=True,
-                 hist_kws={"color":"black", "alpha":0.8}, label="observed")
+    #sns.distplot(step_sizes, ax=ax, kde=False, rug=False, norm_hist=True,
+    #            hist_kws={"color":"black", "alpha":0.8}, label="observed")
     ax.errorbar(np.mean(avg_step_sizes), 0.5, xerr=np.std(avg_step_sizes), color="red",
                 fmt="o", capthick=2, capsize=5, label="predicted")
     ax.set_title("Distribution of step sizes")
@@ -518,7 +518,7 @@ def plot_STDP_rule(taup, taum, Ap, Am, save_name):
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine()
+    #sns.despine()
 
     ax.plot(delta_t, delta_w, "b-", linewidth=2, label="STDP rule taup:%s(ms), Ap:%s"%(taup, Ap))
     ax.set_title("STDP curve")
@@ -613,7 +613,7 @@ def plot_w_distr(wmx, save_name):
     ax2.set_ylabel("Count")
     plt.yscale("log")
 
-    sns.despine()
+    #sns.despine()
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "%s.png"%save_name)
     fig.savefig(fig_name)
@@ -638,7 +638,7 @@ def plot_weights(incomming_weights, save_name):
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine()
+    #sns.despine()
 
     for i, val in incomming_weights.items():
         ax.plot(val*1e9, alpha=0.5, label="%i"%i)  # nS conversion
@@ -663,7 +663,7 @@ def plot_summary_replay(multipliers, replay, rates_PC, rates_BC):
     fig = plt.figure(figsize=(10, 8))
 
     ax = fig.add_subplot(2, 1, 1)
-    sns.despine(ax=ax)
+    #sns.despine(ax=ax)
     ax.plot(multipliers, replay, "b-", linewidth=2, marker="*")
     ax.set_title("Replay")
     ax.set_xlim([multipliers[0], multipliers[-1]])
@@ -672,8 +672,8 @@ def plot_summary_replay(multipliers, replay, rates_PC, rates_BC):
 
     ax2 = fig.add_subplot(2, 1, 2)
     ax3 = ax2.twinx()
-    sns.despine(ax=ax2)
-    sns.despine(ax=ax3, right=False)
+    #sns.despine(ax=ax2)
+    #sns.despine(ax=ax3, right=False)
     ax2.plot(multipliers, rates_PC, "b-", linewidth=2, marker="*", label="PC rate")
     ax2.set_ylabel(ylabel="PC rate (Hz)", color="blue")
     ax3.plot(multipliers, rates_BC, "g-", linewidth=2, marker="*", label="BC rate")
@@ -744,7 +744,7 @@ def plot_summary_ripple(multipliers, ripple_freqs_PC, ripple_freqs_BC, ripple_fr
     h6, l6 = ax6.get_legend_handles_labels()
     ax5.legend(h5+h6, l5+l6)
 
-    sns.despine(right=False)
+    #sns.despine(right=False)
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "ripple.png")
     fig.savefig(fig_name)
@@ -803,7 +803,7 @@ def plot_summary_gamma(multipliers, gamma_freqs_PC, gamma_freqs_BC, gamma_freqs_
     h6, l6 = ax6.get_legend_handles_labels()
     ax5.legend(h5+h6, l5+l6)
 
-    sns.despine(right=False)
+    #sns.despine(right=False)
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "gamma.png")
     fig.savefig(fig_name)
@@ -837,7 +837,7 @@ def plot_summary_AC(multipliers, max_acs_PC, max_acs_BC, max_acs_ripple_PC, max_
     ax2.set_xlabel("Scale factors")
     ax2.legend()
 
-    sns.despine()
+    #sns.despine()
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "autocorrelations.png")
     fig.savefig(fig_name)
@@ -889,7 +889,7 @@ def plot_evolution(ngen, min_fit, mean_fit, std_fit, save_name):
     """
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine()
+    #sns.despine()
 
     ax.plot(ngen, mean_fit, "k-", linewidth=2, label="pop. average")
     ax.fill_between(ngen, mean_fit - std_fit, mean_fit + std_fit, color="lightgray", linewidth=1.5, label="pop. std")
@@ -913,7 +913,7 @@ def plot_SS_voltage(t, v, SS_voltage, current):
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine()
+    #sns.despine()
 
     ax.plot(t, v, linewidth=1.5, label="V_m")
     ax.plot(np.linspace(800, 1000, 200), SS_voltage*np.ones(200), linewidth=1.5, label="V_SS: %.3f mV"%SS_voltage)
@@ -947,7 +947,7 @@ def plot_avg_EPS(t, EPSPs, EPSP, EPSCs, EPSC, mean_weight, save_name):
     ax.legend()
 
     ax2 = fig.add_subplot(2, 1, 2)
-    sns.despine()
+    #sns.despine()
     ax2.plot(t, np.mean(EPSCs, axis=0), "b-", label="mean of %i random weights"%EPSCs.shape[0])
     ax2.plot(t, EPSC, "g-", label="mean of all weights (%f nS)"%mean_weight)
     ax2.set_title("average EPSC")
@@ -978,7 +978,7 @@ def plot_EPS_dist(peak_EPSPs, peak_EPSCs, save_name):
     ax.set_yticks([])
 
     ax2 = fig.add_subplot(2, 1, 2)
-    sns.despine()
+    #sns.despine()
     ax2.violinplot(peak_EPSCs, vert=False, showmeans=True, showextrema=False, showmedians=False,
                    points=peak_EPSCs.shape[0], bw_method="silverman")
     ax2.set_title("%i random EPSCs (mean: %f pA)"%(peak_EPSCs.shape[0], np.mean(peak_EPSCs)))
@@ -1015,7 +1015,7 @@ def plot_learned_EPSPs(delta_ts, EPSPs, save_name):
         if i >= 4:
             ax.set_xlabel("Time (ms)")
 
-    sns.despine()
+    #sns.despine()
     fig.tight_layout()
     fig_name = os.path.join(fig_dir, "%s.png"%save_name)
     fig.savefig(fig_name)
@@ -1034,7 +1034,7 @@ def plot_compare_STDP_to_orig(EPSP_changes, orig_data, save_name, orig_exp_fit=N
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine(right=False)
+    #sns.despine(right=False)
 
     # plot original data
     ax.plot(orig_data["time(ms)"], orig_data["mean(%)"], "ko", markersize=6, label="original (in vitro) data")
@@ -1082,7 +1082,7 @@ def plot_STDP2(STDP_params, sim_exp_fit, save_name):
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(1, 1, 1)
-    sns.despine(right=False)
+    #sns.despine(right=False)
 
     ax.plot(delta_t, delta_w_rule, "b-", linewidth=2, label="STDP rule taup:%s(ms), Ap:%s"%(STDP_params["taup"], STDP_params["Ap"]))
     ax.axhline(0, ls="-", c="k")

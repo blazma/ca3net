@@ -245,20 +245,20 @@ if __name__ == "__main__":
     f_in = "wmx_sym_0.5_linear.pkl"
     wmx_PC_E = load_wmx(os.path.join(base_path, "files", f_in)) * 1e9  # *1e9 nS conversion
 
-    w_PC_I = 7.99  # 1.76
-    w_BC_E = 0.42  # 0.94
-    w_BC_I = 6.46  # 6.66
-    wmx_mult = 2.48  # 1.56
-    w_PC_MF = 22.99  # 21.96
-    rate_MF = 13.79 * Hz  # 11.33
+    w_PC_I = 2.02  # 5.28 from manuscript
+    w_BC_E = 0.44  # 4.5
+    w_BC_I = 5.68  # 3.95
+    wmx_mult = 1.83  # 0.54 (not directly comparable)
+    w_PC_MF = 24.96
+    rate_MF = 19.63 * Hz
 
-    s_PC_E = 0.19  # 0.26
-    s_PC_I = 0.30  # 0.28
-    s_BC_E = 0.38  # 0.34
-    s_BC_I = 0.34  # 0.4 ez nem ennyi volt
+    s_PC_E = 0.19 # 0.26 from manuscript
+    s_PC_I = 0.35 # 0.28
+    s_BC_E = 0.32 # 0.4
+    s_BC_I = 0.23 # 0.28
 
     params_swr = [w_PC_I, w_BC_E, w_BC_I, wmx_mult, w_PC_MF, rate_MF]
     params_gam = params_swr + [s_PC_E, s_PC_I, s_BC_E, s_BC_I]
 
-    swr_network(params_swr, wmx_PC_E, save, seed, verbose)
-    #gamma_network(params_gam, wmx_PC_E, save, seed, verbose)
+    #swr_network(params_swr, wmx_PC_E, save, seed, verbose)
+    gamma_network(params_gam, wmx_PC_E, save, seed, verbose)

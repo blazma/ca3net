@@ -74,14 +74,14 @@ if __name__ == "__main__":
                ("s_BC_I", 0.1, 0.9)]
     pnames = [name for name, _, _ in optconf]
 
-    offspring_size = 2
-    max_ngen = 1
+    offspring_size = 100
+    max_ngen = 100
 
     pklf_name = os.path.join(base_path, "files", f_in)
     wmx_PC_E = load_wmx(pklf_name) * 1e9  # *1e9 nS conversion
 
     # Create multiprocessing pool for parallel evaluation of fitness function
-    n_proc = 2
+    n_proc = 100
     pool = mp.Pool(processes=n_proc)
     # Create BluePyOpt optimization and run
     evaluator = sim_evaluator_double_sim_opt4scale.Brian2Evaluator(linear, wmx_PC_E, optconf)
