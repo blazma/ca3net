@@ -46,6 +46,49 @@ def hof2csv(pnames, hof, f_name):
     df = pd.DataFrame(data=data, columns=pnames)
     df.to_csv(f_name)
 
+def optconf_experimental_range():
+    # preCCh/SWR-presenting conductances (from various papers)
+    g_experimental = {'w_BC_E': 4.5,
+                      'w_BC_I': 3.95,
+                      'w_PC_E': 0.54,
+                      'w_PC_I': 5.28}
+    # from the manuscript:
+    CCh_scaling_factors = {
+        "s_PC_E": 0.255,
+        "s_PC_I": 0.28,
+        "s_BC_E": 0.4
+    }
+    # wmx_mult shall start at the value where it scales the average PC-PC conductance (0.2 nS) to the experimental one
+    wmx_mult = g_experimental["w_PC_E"] / 0.2
+
+    # range boundaries (%)
+    s1, s2 = 0.5, 1.5
+
+    optconf = [("w_PC_I_", s1 * g_experimental["w_PC_I"], s2 * g_experimental["w_PC_I"]),
+               ("w_BC_E_", s1 * g_experimental["w_BC_E"], s2 * g_experimental["w_BC_E"]),
+               ("w_BC_I_", s1 * g_experimental["w_BC_I"], s2 * g_experimental["w_BC_I"]),
+               ("wmx_mult_", s1 * wmx_mult, s2 * wmx_mult),
+               ("w_PC_MF_", 15.0, 25.0),
+               ("rate_MF_", 5.0, 20.0),
+               ("s_PC_E", s1 * CCh_scaling_factors["s_PC_E"], s2 * CCh_scaling_factors["s_PC_E"]),
+               ("s_PC_I", s1 * CCh_scaling_factors["s_PC_I"], s2 * CCh_scaling_factors["s_PC_I"]),
+               ("s_BC_E", s1 * CCh_scaling_factors["s_BC_E"], s2 * CCh_scaling_factors["s_BC_E"]),
+               ("s_BC_I", 0.1, 0.9)]  # no experimental data so no assumption is made
+    return optconf
+
+def optconf_broad_range():
+    s1, s2 = 0.75, 1.25
+    optconf = [("w_PC_I_", 0.1, 8.0),
+               ("w_BC_E_", 0.1, 8.0),
+               ("w_BC_I_", 1.0, 8.0),
+               ("wmx_mult_", 0.5, 3.0),
+               ("w_PC_MF_", 15.0, 25.0),
+               ("rate_MF_", 5.0, 20.0),
+               ("s_PC_E", s1 * 0.255, s2 * 0.255),
+               ("s_PC_I", s1 * 0.28, s2 * 0.28),
+               ("s_BC_E", s1 * 0.4, s2 * 0.4),
+               ("s_BC_I", 0.1, 0.9)]
+    return optconf
 
 if __name__ == "__main__":
     try:
@@ -61,17 +104,7 @@ if __name__ == "__main__":
 
     # parameters to be fitted as a list of: (name, lower bound, upper bound)
     # the order matters! if you want to add more parameters - update `run_sim.py` too
-    s1, s2 = 0.75, 1.25
-    optconf = [("w_PC_I_", 0.1, 8.0),
-               ("w_BC_E_", 0.1, 8.0),
-               ("w_BC_I_", 1.0, 8.0),
-               ("wmx_mult_", 0.5, 3.0),
-               ("w_PC_MF_", 15.0, 25.0),
-               ("rate_MF_", 5.0, 20.0),
-               ("s_PC_E", s1*0.255, s2*0.255),
-               ("s_PC_I", s1*0.28, s2*0.28),
-               ("s_BC_E", s1*0.4, s2*0.4),
-               ("s_BC_I", 0.1, 0.9)]
+    optconf = optconf_broad_range()
     pnames = [name for name, _, _ in optconf]
 
     offspring_size = 100

@@ -36,7 +36,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
                        for name, minval, maxval in self.params]
         self.swr_objectives = ["ripple_peakE", "ripple_peakI", "no_gamma_power_PC", "no_gamma_power_BC", "ripple_powerE", "ripple_powerI", "ripple_rateE", "ripple_rateI"]
         self.gam_objectives = ["gamma_peakE", "gamma_peakI",  "no_subgamma_power_PC", "no_subgamma_power_BC", "gamma_powerE", "gamma_powerI", "gamma_rateE", "gamma_rateI"]
-        self.objectives = self.swr_objectives + self.gam_objectives
+        self.exp_objectives = ["diff_wmx_mult", "diff_w_PC_I", "diff_w_BC_E", "diff_w_BC_I"]
+        self.objectives = self.swr_objectives + self.gam_objectives + self.exp_objectives
 
     def generate_model(self, individual, verbose=False):
         from run_sim import run_simulation
@@ -117,6 +118,29 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
         else:
             return [0.]*len(self.gam_objectives)
 
+    def evaluate_errors_exp(self, individual):
+        w_PC_I_, w_BC_E_, w_BC_I_, wmx_mult_, _, _, _, _, _, _ = individual
+
+        # preCCh/SWR-presenting conductances (from various papers)
+        g_experimental = {'w_BC_E': 4.5,
+                          'w_BC_I': 3.95,
+                          'w_PC_E': 0.54,
+                          'w_PC_I': 5.28}
+
+        sigma = 0.5
+        wmx_mult_exp = g_experimental["w_PC_E"] / 0.2
+
+        diff_wmx_mult = np.exp(-1 / 2 * ((wmx_mult_ - wmx_mult_exp) ** 2 / sigma ** 2))
+        diff_w_PC_I = np.exp(-1 / 2 * ((w_PC_I_ - g_experimental['w_PC_I']) ** 2 / sigma ** 2))
+        diff_w_BC_E = np.exp(-1 / 2 * ((w_BC_E_ - g_experimental['w_BC_E']) ** 2 / sigma ** 2))
+        diff_w_BC_I = np.exp(-1 / 2 * ((w_BC_I_ - g_experimental['w_BC_I']) ** 2 / sigma ** 2))
+
+        errors = -1. * np.array([0.25 * diff_wmx_mult,
+                                 0.25 * diff_w_PC_I,
+                                 0.25 * diff_w_BC_E,
+                                 0.25 * diff_w_BC_I])  # weighted by .25 so that it won't overpower the rest
+        return errors.tolist()
+
     def save_output(self, individual_swr, individual_gam, errors):
         if not os.path.isdir("./errors"):
             os.mkdir("./errors")
@@ -164,7 +188,8 @@ class Brian2Evaluator(bpop.evaluators.Evaluator):
         try:
             swr_errors = self.evaluate_errors_swr(SM_PC_swr, SM_BC_swr, RM_PC_swr, RM_BC_swr)
             gam_errors = self.evaluate_errors_gam(SM_PC_gam, SM_BC_gam, RM_PC_gam, RM_BC_gam)
-            errors = swr_errors + gam_errors
+            exp_errors = self.evaluate_errors_exp(individual)
+            errors = swr_errors + gam_errors + exp_errors
 
             self.save_output(individual_swr, individual_gam, errors)
             self.gen_id += 1
