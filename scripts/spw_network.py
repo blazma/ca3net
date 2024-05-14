@@ -128,12 +128,11 @@ dx_gaba/dt = -x_gaba/decay_BC_I : 1
 """
 
 eqs_BC_STP = """
-I_syn_ee_synapses : ampere
-I_syn_ei_synapses : ampere
-I_syn_ie_synapses : ampere
 I_syn_ii_synapses : ampere
-dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w + (I_syn_ee_synapses + I_syn_ei_synapses + I_syn_ie_synapses + I_syn_ii_synapses))/Cm_BC : volt (unless refractory)
+dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) + I_syn_ii_synapses)/Cm_BC : volt (unless refractory)
 dw/dt = (a_BC*(vm-Vrest_BC) - w) / tau_w_BC : amp
+dg_ampa/dt = (x_ampa - g_ampa) / rise_BC_E : 1
+dx_ampa/dt = -x_ampa/decay_BC_E : 1
 """
 
 #Short-term plasticity with the Tsodyks, Pawelzik, Markram 1998 model
@@ -156,14 +155,14 @@ x += -U_SE*x
 
 #PV+BC - PV+BC connection parameters from Kohus 2016
 
-U_SE_BC_I = 0.31
+U_SE_BC_I = 0.3
 A_SE_BC_I = 410 * pA
 tau_rec_BC_I = 1080 * ms
 
 #PC - PV+BC connection parameters from Ecker 2020
 
-U_SE_BC_E = 0.23
-A_SE_BC_E = 205 * pA
+U_SE_BC_E = 0.23 #1-re veszem és a tau-t kicsire akkor olyan, mintha nem lenne STP
+A_SE_BC_E = 300 * pA
 tau_rec_BC_E = 410 * ms
 
 
@@ -222,19 +221,8 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
     C_PC_I = Synapses(BCs, PCs, on_pre="x_gaba+=norm_PC_I*w_PC_I", delay=delay_PC_I)
     C_PC_I.connect(p=connection_prob_BC)
 
-    C_BC_E = Synapses(PCs, BCs, model="""
-                    dx/dt =  z/tau_rec   : 1 (clock-driven) # recovered
-                    dy/dt = -y/tau_inact : 1 (clock-driven) # active
-                    A_SE : ampere
-                    U_SE : 1
-                    tau_inact : second
-                    tau_rec : second
-                    z = 1 - x - y : 1 # inactive
-                    I_syn_ei_synapses_post = A_SE*y : ampere (summed)
-                    """
-                    , on_pre=synapses_action, method="exponential_euler")
+    C_BC_E = Synapses(PCs, BCs, on_pre="x_ampa+=norm_BC_E*w_BC_E", delay=delay_BC_E)
     C_BC_E.connect(p=connection_prob_PC)
-    C_BC_E.x = 1; C_BC_E.U_SE = U_SE_BC_E; C_BC_E.A_SE = A_SE_BC_E; C_BC_E.tau_rec = tau_rec_BC_E; C_BC_E.tau_inact = decay_BC_E
 
     C_BC_I = Synapses(BCs, BCs, model="""
                     dx/dt =  z/tau_rec   : 1 (clock-driven) # recovered
