@@ -64,7 +64,7 @@ def _estimate_LFP(StateM, subset):
         v = StateM[i].vm
         g_exc = StateM[i].g_ampa*nS + StateM[i].g_ampaMF*nS
         i_exc = g_exc * (v - (Erev_E * np.ones_like(v/mV)))  # pA
-        g_inh = StateM[i].g_gaba*nS
+        g_inh = StateM[i].g_syn_ie
         i_inh = g_inh * (v - (Erev_I * np.ones_like(v/mV)))  # pA
         LFP += -(i_exc + i_inh)  # (this is still in pA)
 
@@ -198,7 +198,7 @@ def save_vars(SM, RM, StateM, subset, seed, f_name="sim_vars_PC"):
         # separate outer (mossy fiber) input, from AMPA cond from local cells
         g_MF = StateM[i].g_ampaMF*nS
         i_MF = -g_MF * (v - (Erev_E * np.ones_like(v / mV)))  # pA
-        g_inh = StateM[i].g_gaba*nS
+        g_inh = StateM[i].g_syn_ie
         i_inh = -g_inh * (v - (Erev_I * np.ones_like(v/mV)))  # pA
         PSCs[i] = {"i_exc": i_exc/pA, "i_MF": i_MF/pA, "i_inh": i_inh/pA}
         ws[i] = StateM[i].w/pA

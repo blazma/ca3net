@@ -338,7 +338,7 @@ def plot_detailed(StateM, subset, multiplier_, plot_adaptation=True):
         if plot_adaptation:
             ax2.plot(t, StateM[i].w*1e12, linewidth=1.5, label="%i"%i)  # *1e12 pA conversion
         ax3.plot(t, (StateM[i].g_ampa + StateM[i].g_ampaMF), linewidth=1.5, label="%i"%i)
-        ax4.plot(t, StateM[i].g_gaba, linewidth=1.5, label="%i"%i)
+        ax4.plot(t, StateM[i].g_syn_ie, linewidth=1.5, label="%i"%i)
 
     ax.set_title("Membrane potential (last 100 ms)")
     ax.set_ylabel("V (mV)")
